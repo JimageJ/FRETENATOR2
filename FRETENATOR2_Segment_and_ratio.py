@@ -1,10 +1,10 @@
 """
 ******************************************************************************************
 		Written by Jim Rowe, Alexander Jones' lab (SLCU, Cambridge).
-								Started: 2020-08-06		
+								Started: 2022-08-01		
 							 		@BotanicalJim
 							james.rowe at slcu.cam.ac.uk
-									Version 11
+									Version 0.1
 
 
 
@@ -32,21 +32,18 @@ def globalBackSub(labelGFX, quantGFX, otherGFX):
 	return quantGFX
 	
 	
-	
-
 def createSubtractionLabels(labelGFX, gfx2, outputGFX):
 	"""Requires a labelGFX image, two sacrificial otherGFX images, one of which will be the output"""
 	clij2.dilateLabels(labelGFX, gfx2 , 4)
 	clij2.subtractImages(gfx2, labelGFX, outputGFX)
 	return outputGFX
 	
+	
 def localLabelBackSub(dilatedLabelGFX, labelGFX, quantGFX, otherGFX1, otherGFX2):
 	"""Requires a dilatedlabelGFX image, labelGFX, a quantGFX image, and two sacrificial otherGFX images"""
 	results4=ResultsTable()
 	clij2.statisticsOfBackgroundAndLabelledPixels(quantGFX, dilatedLabelGFX, results4)
 	intensities=results4.getColumn(12)
-	#print(intensities)
-	#print len(intensities)
 	fp= FloatProcessor(len(intensities), 1, intensities, None)
 	intensitiesImp= ImagePlus("IntensitiesImp", fp)
 	intGFX=clij2.push(intensitiesImp)
@@ -55,10 +52,10 @@ def localLabelBackSub(dilatedLabelGFX, labelGFX, quantGFX, otherGFX1, otherGFX2)
 	clij2.subtractImages(quantGFX, otherGFX1, otherGFX2)
 	clij2.copy(otherGFX2, quantGFX)
 	return quantGFX
-					
+			
+							
 def extractChannel(imp, nChannel, nFrame):
 	"""extract a channel from the image, at a given frame returning a new imagePlus labelled with the channel name"""
-
 	stack = imp.getImageStack()
 	ch=ImageStack(imp.width, imp.height)
 	for i in range(imp.getNSlices()):
@@ -67,12 +64,10 @@ def extractChannel(imp, nChannel, nFrame):
 	imp3 = ImagePlus("Channel " + str(nChannel), ch).duplicate()
 	stats =StackStatistics(imp3) 
 	IJ.setMinAndMax(imp3, stats.min, stats.max)
-	
 	return imp3
 
 def extractFrame(imp, nFrame):
 	"""extract a frame from the image, returning a new 16 bit imagePlus labelled with the channel name"""
-
 	stack = imp.getImageStack()
 	fr=ImageStack(imp.width, imp.height)
 	for i in range(1, imp.getNSlices() + 1):
@@ -87,15 +82,13 @@ def extractFrame(imp, nFrame):
 
 def errorDialog(message):
 	"""Outputs a given error for end users"""
-
 	gd = GenericDialogPlus("Error")
-
 	gd.addMessage(message)
 	gd.showDialog()
 	return
 	
 def concatStacks(masterStack, impToAdd):
-	#takes an IMP and adds it to a stack, returning the concatenated stack
+	"""takes an IMP and adds it to a stack, returning the concatenated stack"""
 	impToAddStack=impToAdd.getImageStack()
 	for i in xrange(1, impToAdd.getNSlices()+1):
 		try:	
@@ -104,8 +97,8 @@ def concatStacks(masterStack, impToAdd):
 	return masterStack
 
 def previewDialog(imp):
+	"""Generates the settings dialog and preview window, which live updates dependent on chosen settings"""
 	gd = GenericDialogPlus("FRETENATOR2: 2FRET2FURIOUSLY")
-
 	#create a list of the channels in the provided imagePlus
 	types = []
 	for i in xrange(1, imp.getNChannels()+1):
@@ -160,7 +153,7 @@ def previewDialog(imp):
 	Rowe, JH., et al., Next-generation ABACUS biosensors reveal cellular
 	ABA dynamics driving root growth at low aerial humidity
 	""")
-	
+	gd.setLocation(0,0)
 	gd.showDialog()
 
 		
@@ -248,7 +241,7 @@ def previewDialog(imp):
 			"""	+ str(clij2.reportMemory()) )
 
 
-	gfx1,gfx2,gfx3,gfx4,gfx5 = segment(gfx1,gfx2,gfx3,gfx4,gfx5, gaussianSigma, thresholdMethod,maxIntensity, largeDoGSigma, pixelAspect, originalTitle, DoG,  manualSegment, manualThreshold, dilation,sizeExclude, minSize, maxSize, watershed)
+	gfx1,gfx2,gfx3,gfx4,gfx5 = segment(gfx1,gfx2,gfx3,gfx4,gfx5, gaussianSigma, thresholdMethod, maxIntensity, largeDoGSigma, pixelAspect, originalTitle, DoG,  manualSegment, manualThreshold, dilation, sizeExclude, minSize, maxSize, watershed)
 	clij2.maximumZProjection(gfx5, gfx7)
 
 	labelPrevImp= clij2.pull(gfx7)
@@ -286,47 +279,47 @@ def previewDialog(imp):
 		pixelByPixel = gd.checkboxes.get(4).getState()
 	
 		if (segmentChannelOld !=segmentChannel or
-		thresholdMethodOld !=thresholdMethod or
-		maxIntensityOld !=maxIntensity or
-		gaussianSigmaOld !=gaussianSigma or
-		largeDoGSigmaOld != largeDoGSigma or
-		DoGOld !=DoG or
-		manualSegmentOld != manualSegment or
-		manualThresholdOld !=manualThreshold or
-		dilation != dilationOld or
-		sizeExcludeOld!=sizeExclude or
-		minSizeOld!=minSize or
-		maxSizeOld!=maxSize or
-		watershedOld!=watershed
-		):
-			if minSizeOld!=minSize:
-				if minSize>=maxSize:
-					maxSize=minSize+1
-					gd.sliders.get(5).setValue(maxSize)
-			if maxSizeOld!=maxSize:
-				if minSize>=maxSize:
-					minSize=maxSize-1
-					gd.sliders.get(4).setValue(minSize)
-			if segmentChannelOld!=segmentChannel:
-					clij2.clear()
-					print('eh')
-					segmentImp=extractChannel(imp1, segmentChannel, 0)
-					gfx1=clij2.push(segmentImp)
-					gfx2=clij2.create(gfx1)
-					gfx3=clij2.create(gfx1)
-					gfx4=clij2.create(gfx1)
-					gfx5=clij2.create(gfx1)
-					gfx7=clij2.create([imp.getWidth(), imp.getHeight()])
-			gfx1,gfx2,gfx3,gfx4,gfx5 = segment(gfx1,gfx2,gfx3,gfx4,gfx5, gaussianSigma, thresholdMethod, maxIntensity, largeDoGSigma, pixelAspect, originalTitle, DoG, manualSegment, manualThreshold, dilation,sizeExclude, minSize, maxSize, watershed)
-			#print (gfx1,gfx2,gfx3,gfx4,gfx5, gaussianSigma, thresholdMethod, maxIntensity, largeDoGSigma, pixelAspect, originalTitle, DoG, manualSegment, manualThreshold, dilation,sizeExclude, minSize, maxSize, watershed)
-			clij2.maximumZProjection(gfx5, gfx7)
-			labelPrevImp.close()
-			labelPrevImp= clij2.pull(gfx7)
-			IJ.setMinAndMax(labelPrevImp, 0,clij2.getMaximumOfAllPixels(gfx7))
-			labelPrevImp.setTitle("Preview segmentation")
-			labelPrevImp.show()
-			
-			IJ.run("glasbey_inverted")
+			thresholdMethodOld !=thresholdMethod or
+			maxIntensityOld !=maxIntensity or
+			gaussianSigmaOld !=gaussianSigma or
+			largeDoGSigmaOld != largeDoGSigma or
+			DoGOld !=DoG or
+			manualSegmentOld != manualSegment or
+			manualThresholdOld !=manualThreshold or
+			dilation != dilationOld or
+			sizeExcludeOld!=sizeExclude or
+			minSizeOld!=minSize or
+			maxSizeOld!=maxSize or
+			watershedOld!=watershed
+			):
+				if minSizeOld!=minSize:
+					if minSize>=maxSize:
+						maxSize=minSize+1
+						gd.sliders.get(5).setValue(maxSize)
+				if maxSizeOld!=maxSize:
+					if minSize>=maxSize:
+						minSize=maxSize-1
+						gd.sliders.get(4).setValue(minSize)
+				if segmentChannelOld!=segmentChannel:
+						clij2.clear()
+						print('eh')
+						segmentImp=extractChannel(imp1, segmentChannel, 0)
+						gfx1=clij2.push(segmentImp)
+						gfx2=clij2.create(gfx1)
+						gfx3=clij2.create(gfx1)
+						gfx4=clij2.create(gfx1)
+						gfx5=clij2.create(gfx1)
+						gfx7=clij2.create([imp.getWidth(), imp.getHeight()])
+				gfx1,gfx2,gfx3,gfx4,gfx5 = segment(gfx1,gfx2,gfx3,gfx4,gfx5, gaussianSigma, thresholdMethod, maxIntensity, largeDoGSigma, pixelAspect, originalTitle, DoG, manualSegment, manualThreshold, dilation,sizeExclude, minSize, maxSize, watershed)
+				#print (gfx1,gfx2,gfx3,gfx4,gfx5, gaussianSigma, thresholdMethod, maxIntensity, largeDoGSigma, pixelAspect, originalTitle, DoG, manualSegment, manualThreshold, dilation,sizeExclude, minSize, maxSize, watershed)
+				clij2.maximumZProjection(gfx5, gfx7)
+				labelPrevImp.close()
+				labelPrevImp= clij2.pull(gfx7)
+				IJ.setMinAndMax(labelPrevImp, 0,clij2.getMaximumOfAllPixels(gfx7))
+				labelPrevImp.setTitle("Preview segmentation")
+				labelPrevImp.show()
+				
+				IJ.run("glasbey_inverted")
 		
 		segmentChannelOld=segmentChannel
 		thresholdMethodOld=thresholdMethod
@@ -357,28 +350,23 @@ def previewDialog(imp):
 	return segmentChannel, donorChannel, acceptorChannel, acceptorChannel2, thresholdMethod, maxIntensity, gaussianSigma, largeDoGSigma, DoG,  manualSegment, manualThreshold, makeNearProj, dilation, sizeExclude, minSize, maxSize, watershed, backsubVal, pixelByPixel
 	
 def segment(gfx1,gfx2,gfx3,gfx4,gfx5, gaussianSigma, thresholdMethod, maxIntensity, largeDoGSigma, pixelAspect, originalTitle, DoG,  manualSegment, manualThreshold, dilation, sizeExclude, minSize, maxSize, watershed):
-	
-
-
+	"""Segmentation based on user settings"""
 	# DoG filter for background normalised segmentation. NB. Kernel is Z-normalised to pixel aspect ratio
-	if DoG == True :
-		
+	if DoG == True :	
 		clij2.differenceOfGaussian3D(gfx1, gfx2, gaussianSigma, gaussianSigma, 1+(gaussianSigma-1)/pixelAspect, largeDoGSigma, largeDoGSigma,largeDoGSigma/pixelAspect)
 	else:
 		clij2.gaussianBlur3D(gfx1, gfx2, gaussianSigma,gaussianSigma, 1+(gaussianSigma-1)/pixelAspect)
 
 	if manualSegment == True :
 		clij2.threshold(gfx2, gfx3, manualThreshold)
-
 	else:
 		#auto threshold and watershed to seed the object splitting
 		clij2.automaticThreshold(gfx2, gfx3, thresholdMethod)
-	
+
 	if watershed:
 		clij2.watershed(gfx3,gfx2)
 	else:
 		clij2.copy(gfx3,gfx2)
-
 	
 	# add watershed to original threshold, and then use this to generate a binary image of any ROI lost in watershed process
 	clij2.addImages(gfx2, gfx3, gfx5)
@@ -400,14 +388,17 @@ def segment(gfx1,gfx2,gfx3,gfx4,gfx5, gaussianSigma, thresholdMethod, maxIntensi
 	watershedLabelMax =clij2.getMaximumOfAllPixels(gfx2)
 	clij2.connectedComponentsLabelingDiamond(gfx5, gfx4)
 	clij2.addImageAndScalar(gfx4, gfx5, (1 + watershedLabelMax))
+	
 	#delete the background and combine the two images
 	clij2.replaceIntensity(gfx5, gfx4,(1 + watershedLabelMax), 0)
 	clij2.maximumImages(gfx4, gfx2, gfx5)
-
+	
+	#remove labeled objects that are too big or too small
 	if sizeExclude:
 		clij2.excludeLabelsOutsideSizeRange(gfx5, gfx4, minSize, maxSize)
 		clij2.copy(gfx4, gfx5)
-
+		
+	#dilate images
 	if dilation:
 		for i in range(dilation):
 			if (i % 2) == 0:
@@ -415,8 +406,6 @@ def segment(gfx1,gfx2,gfx3,gfx4,gfx5, gaussianSigma, thresholdMethod, maxIntensi
 			else:
 				clij2.onlyzeroOverwriteMaximumBox(gfx5, gfx3, gfx4) 
 			clij2.copy(gfx4, gfx5)
-
-	if dilation:
 		for i in range(dilation):
 			if (i % 2) == 0:
 				clij2.onlyzeroOverwriteMaximumDiamond(gfx3, gfx5, gfx4) 
@@ -428,26 +417,26 @@ def segment(gfx1,gfx2,gfx3,gfx4,gfx5, gaussianSigma, thresholdMethod, maxIntensi
 	return gfx1,gfx2,gfx3,gfx5, gfx4
 
 def fretCalculations(imp1, nFrame, donorChannel, acceptorChannel, acceptorChannel2, table, gfx1, gfx2, gfx3, gfx4, gfx5, originalTitle, backSub, pixelByPixel):
-
+	"""Perform FRET calculations (Sorry! Complex function!)"""
+	
+	#Extract appropriate channels
 	donorImp=extractChannel(imp1, donorChannel, nFrame)
 	acceptorImp=extractChannel(imp1, acceptorChannel, nFrame)
 	acceptorImp2=extractChannel(imp1, acceptorChannel2, nFrame)
 	
-	#push donor and acceptor channels to gpu and threshold them both to remove saturated pixels
-	
+	#push donor and acceptor channels to gpu threshold
 	gfx4=clij2.push(donorImp)
 	gfx5=clij2.push(acceptorImp)
 	gfx6=clij2.create(gfx5)
 
-	#remove saturated pixels from donor and acceptor images	
+	#thresholds to create a mask to remove saturated pixels from donor and acceptor images	
 	clij2.threshold(gfx4,gfx2, maxIntensity)
 	clij2.binarySubtract(gfx3, gfx2, gfx6)
 	clij2.threshold(gfx5,gfx2, maxIntensity)
 	clij2.binarySubtract(gfx6, gfx2, gfx3)
 	clij2.threshold(gfx3,gfx6, 0.5)
 	
-	
-	
+	#Apply appropriate background subtraction if required (must be after the saturated pixel removal). NB. Local label uses more GPU memory, which may be a limiting factor on some computers
 	if backSub==1:
 		gfx7=clij2.create(gfx1)
 		gfx3=createSubtractionLabels(gfx1, gfx2, gfx3)
@@ -456,44 +445,30 @@ def fretCalculations(imp1, nFrame, donorChannel, acceptorChannel, acceptorChanne
 	if backSub==2:
 		gfx4=globalBackSub(gfx1, gfx4, gfx2)
 		gfx5=globalBackSub(gfx1, gfx5, gfx2)
-
 	
-	"""
-	#gfx1 labelmap
-	gfx1IMP=clij2.pull(gfx1).show()
 	
-	gfx2IMP=clij2.pull(gfx2).show()
-	gfx3IMP=clij2.pull(gfx3).show()
-	gfx4IMP=clij2.pull(gfx4).show()
-	gfx5IMP=clij2.pull(gfx5).show()
-	gfx6IMP=clij2.pull(gfx6).show()
-	
-	"""
-	
+	#Mask to remove the saturated pixels
+	#donor is gfx2, acceptor FRET is gfx4, segment channel (acceptor normal) is gfx6, gfx3 is triple threshold
+	clij2.mask(gfx4,gfx6, gfx2)
+	clij2.mask(gfx5,gfx6, gfx4)
+			
+	#NB have to push the acceptor image now...
 	gfx6=clij2.push(acceptorImp2)
 	if backSub==1:
-		gfx6=localLabelBackSub(gfx3, gfx1, gfx6, gfx2, gfx7)
+		gfx6=localLabelBackSub(gfx3, gfx1, gfx6, gfx5, gfx7)
 		gfx7.close()
 	if backSub==2:
-		gfx6=globalBackSub(gfx1, gfx6, gfx2)
-	#donor is gfx4, acceptor FRET is gfx5, segment channel (acceptor normal) is gfx6, gfx3 is triple threshold
-	
-	results=ResultsTable()
-	clij2.statisticsOfBackgroundAndLabelledPixels(gfx4, gfx1, results)
+		gfx6=globalBackSub(gfx1, gfx6, gfx5)
 
-		
+	#extract the intensity of each nucleus for each channel
+	results=ResultsTable()
+	clij2.statisticsOfBackgroundAndLabelledPixels(gfx2, gfx1, results)
 	donorChIntensity=results.getColumn(13)
-	
 	results2=ResultsTable()
-	clij2.statisticsOfBackgroundAndLabelledPixels(gfx5, gfx1, results2)
+	clij2.statisticsOfBackgroundAndLabelledPixels(gfx4, gfx1, results2)
 	acceptorChIntensity=results2.getColumn(13)
-	
 	results3=ResultsTable()
 	clij2.statisticsOfBackgroundAndLabelledPixels(gfx6, gfx1, results3)
-
-	
-
-
 	
 	#calculate the fret ratios, removing any ROI with intensity of zero
 	FRET =[]
@@ -502,38 +477,39 @@ def fretCalculations(imp1, nFrame, donorChannel, acceptorChannel, acceptorChanne
 		if (acceptorChIntensity[i]>0) and (donorChIntensity[i]>0):
 			#don't write in the zeros to the results
 			FRET.append((1000*acceptorChIntensity[i]/donorChIntensity[i]))
-	
 			table.incrementCounter()
+			#frame, label and ER
 			table.addValue("Frame (Time)", nFrame)
 			table.addValue("Label", i)
 			table.addValue("Emission ratio", acceptorChIntensity[i]/donorChIntensity[i])
 
+			#mean emission
 			table.addValue("Mean donor emission", results.getValue("MEAN_INTENSITY",i))
 			table.addValue("Mean acceptor emission (FRET)", results2.getValue("MEAN_INTENSITY",i))
 			table.addValue("Mean acceptor emission", results3.getValue("MEAN_INTENSITY",i))
-
-
 			
+			#sum emission
 			table.addValue("Sum donor emission", donorChIntensity[i])
 			table.addValue("Sum acceptor emission (FRET)", acceptorChIntensity[i])
 			table.addValue("Sum acceptor emission", results3.getValue("SUM_INTENSITY",i))
-
-			
+			#shape and location descriptors
 			table.addValue("Volume", cal.pixelWidth * cal.pixelHeight * cal.pixelDepth * results.getValue("PIXEL_COUNT",i))
 			table.addValue("Pixel count", results.getValue("PIXEL_COUNT",i))
 			table.addValue("x", cal.pixelWidth*results.getValue("CENTROID_X",i))
 			table.addValue("y", cal.pixelHeight*results.getValue("CENTROID_Y",i))
 			table.addValue("z", cal.pixelDepth*results.getValue("CENTROID_Z",i))
+			
+			#File name for traceability 
 			table.addValue("File name", originalTitle)
 		else:
 			#must write in the zeros as this array is used to generate the map of emission ratios
 			FRET.append(0)
 			
-
-	
 	table.show("Results of " + originalTitle)
+	#export label image
 	labelImp = clij2.pull(gfx1)
 	if pixelByPixel==0:
+		#write all the emission ratios to an array, push to an GFX image, use this to map emission ratios
 		FRET[0]=0
 		FRETarray= array( "f", FRET)
 		fp= FloatProcessor(len(FRET), 1, FRETarray, None)
@@ -545,44 +521,48 @@ def fretCalculations(imp1, nFrame, donorChannel, acceptorChannel, acceptorChanne
 		
 		
 		#pull the images
-		
 		FRETimp2=clij2.pull(gfx5)
 		FRETProjImp=clij2.pull(maxProj)
 		
 	else:
 		
 		#donor is gfx2, acceptor FRET is gfx4, segment channel (acceptor normal) is gfx6, threshold image:gfx3
-		clij2.gaussianBlur3D(gfx5, gfx2, 1.1, 1.1, 1.1)
-		clij2.mask(gfx2, gfx1, gfx5)
+		#blur the acceptor and donor channels, then remask to prevent NaN/infinite values after division
+		clij2.gaussianBlur3D(gfx4, gfx5, 1.1, 1.1, 1.1)
+		clij2.mask(gfx5, gfx1, gfx4)
+		clij2.gaussianBlur3D(gfx2, gfx5, 1.1, 1.1, 1.1)
+		clij2.mask(gfx5, gfx1, gfx2)
 		
-		clij2.gaussianBlur3D(gfx4, gfx2, 1.1, 1.1, 1.1)
-		clij2.mask(gfx2, gfx1, gfx4)
+		#create Z sum projected donor and acceptor images for Z-proj ratio calc -> may replace with a different technique later
+		donorSum=clij2.create(gfx4.getWidth(), gfx4.getHeight(), 1)
+		acceptorFSum=clij2.create(gfx4.getWidth(), gfx4.getHeight(), 1)
+		clij2.sumZProjection(gfx2, donorSum)
+		clij2.sumZProjection(gfx4, acceptorFSum)
 		
-		donorSum=clij2.create(gfx5.getWidth(), gfx5.getHeight(), 1)
-		acceptorFSum=clij2.create(gfx5.getWidth(), gfx5.getHeight(), 1)
-		
-		clij2.sumZProjection(gfx4, donorSum)
-		clij2.sumZProjection(gfx5, acceptorFSum)
-		maxProj=clij2.create(gfx5.getWidth(), gfx5.getHeight(), 1)
+		#Divide Z proj Acceptor by Z proj Donor and pull image
+		maxProj=clij2.create(gfx4.getWidth(), gfx4.getHeight(), 1)
 		clij2.divideImages(acceptorFSum, donorSum, maxProj)
 		FRETProjImp=clij2.pull(maxProj)
 		
-		acceptorImp=clij2.pull(gfx5)
-		donorImp=clij2.pull(gfx4)
-		
+		#pull acceptor and donor stacks to convert to 32 bit
+		acceptorImp=clij2.pull(gfx4)
+		donorImp=clij2.pull(gfx2)
 		ImageConverter(acceptorImp).convertToGray32()
 		ImageConverter(donorImp).convertToGray32()
-		#donorImp.show()
+		
+		#clean up GPU memory
 		clij2.clear()
+		
+		#push 32bit images and perform ratio calc
 		gfx4=clij2.push(acceptorImp)
 		gfx2=clij2.push(donorImp)
 		gfx1=clij2.create(gfx2.getDimensions(), clij2.Float)
 		clij2.divideImages(gfx4, gfx2, gfx1)
 		
-		
+		#pull ratio stack
 		FRETimp2=clij2.pull(gfx1)
 
-	
+	#clean up
 	clij2.clear()
 	donorImp.close()
 	acceptorImp.close()
