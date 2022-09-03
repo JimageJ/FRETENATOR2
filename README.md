@@ -9,9 +9,10 @@ FRETENATOR2 implemented features:
   - Local label based subtraction
 * Pixel by pixel processing
 * Setting saving/reloading
+* Headless mode for batch
 
-Planned features:
+
+Possible planned features:
 
 * 2D image processing
 * Quick segmentation settings button
-* Headless mode for batch
