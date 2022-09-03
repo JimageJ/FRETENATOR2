@@ -20,7 +20,8 @@ from ij.measure 	import ResultsTable
 from array 			import array, zeros
 from java.lang 		import Thread
 from ij.plugin 		import Slicer
-
+import pickle
+from os.path 		import exists
 # *******************************functions************************************************
 def globalBackSub(labelGFX, quantGFX, otherGFX):
 	"""Requires a labelGFX image, the quantGFX to be quantified (also the output) and, one sacrificial otherGFX images"""
@@ -96,9 +97,11 @@ def concatStacks(masterStack, impToAdd):
 		except: print "FAILED To addto stack for: "+ impToAdd.getTitle() +" " + str(i)	
 	return masterStack
 
-def previewDialog(imp):
+def previewDialog(imp, options):
 	"""Generates the settings dialog and preview window, which live updates dependent on chosen settings"""
 	gd = GenericDialogPlus("FRETENATOR2: 2FRET2FURIOUSLY")
+	#unpack default settings
+	segmentChannel, donorChannel, acceptorChannel, acceptorChannel2, thresholdMethod, maxIntensity, gaussianSigma, largeDoGSigma, DoG,  manualSegment, manualThreshold, makeNearProj, dilation, sizeExclude, minSize, maxSize, watershed, backsubVal, pixelByPixel, saveSettings =options
 	#create a list of the channels in the provided imagePlus
 	types = []
 	for i in xrange(1, imp.getNChannels()+1):
@@ -106,44 +109,54 @@ def previewDialog(imp):
 		
 	gd.addMessage("""Channel choices:""")
 	#user can pick which channel to base the segmentation on
-	if len(types)>2:
-		gd.addChoice("Segmentation channel", types, types[2])
-		gd.addChoice("Donor channel (denominator)", types, types[0])
-		gd.addChoice("Acceptor (FRET) channel (numerator)", types, types[1])
-		gd.addChoice("Acceptor channel", types, types[2])
-		#print('YAY')
+	if (segmentChannel<= len(types) and
+		donorChannel<= len(types) and
+		acceptorChannel<= len(types) and
+		acceptorChannel2<= len(types)):
+		gd.addChoice("Segmentation channel", types, str(segmentChannel))
+		gd.addChoice("Donor channel (denominator)", types, str(donorChannel))
+		gd.addChoice("Acceptor (FRET) channel (numerator)", types, str(acceptorChannel))
+		gd.addChoice("Acceptor channel", types, str(acceptorChannel2))
 	else:
-		gd.addChoice("Segmentation channel", types, types[-1])
-		gd.addChoice("Donor channel (denominator)", types, types[0])
-		gd.addChoice("Acceptor (FRET) channel (numerator)", types, types[-1])
-		gd.addChoice("Acceptor channel", types, types[-1])
+		if len(types)>2:
+			gd.addChoice("Segmentation channel", types, types[2])
+			gd.addChoice("Donor channel (denominator)", types, types[0])
+			gd.addChoice("Acceptor (FRET) channel (numerator)", types, types[1])
+			gd.addChoice("Acceptor channel", types, types[2])
+			#print('YAY')
+		else:
+			gd.addChoice("Segmentation channel", types, types[-1])
+			gd.addChoice("Donor channel (denominator)", types, types[0])
+			gd.addChoice("Acceptor (FRET) channel (numerator)", types, types[-1])
+			gd.addChoice("Acceptor channel", types, types[-1])
 	gd.addMessage("""Segmentation settings:""")
 	methods=["Otsu","Default", "Huang", "Intermodes", "IsoData", "IJ_IsoData", "Li", "MaxEntropy", "Mean", "MinError", "Minimum", "Moments", "Percentile", "RenyiEntropy", "Shanbhag", "Triangle", "Yen"]
 	
-	gd.addCheckbox("Use difference of Gaussian instead of Gaussian?", True)
-	gd.addSlider("Small DoG/Gaussian sigma", 0.5, 10, 0.8, 0.1)
-	gd.addSlider("Large DoG sigma", 0.5, 20, 4 ,0.1)
+	gd.addCheckbox("Use difference of Gaussian instead of Gaussian?", DoG)
+	gd.addSlider("Small DoG/Gaussian sigma", 0.5, 10, gaussianSigma, 0.1)
+	gd.addSlider("Large DoG sigma", 0.5, 20, largeDoGSigma,0.1)
 	gd.setModal(False)
-	gd.addChoice("Autosegmentation method", methods, methods[0])
-	gd.addCheckbox("Manually set threshold? ", False)
-	gd.addSlider("Manual threshold", 10, 65534, 3000, 1)
+	gd.addChoice("Autosegmentation method", methods, thresholdMethod)
+	gd.addCheckbox("Manually set threshold? ", manualSegment)
+	gd.addSlider("Manual threshold", 10, 65534, manualThreshold, 1)
 	
 	dilationOptions=["0", "1", "2","3", "4", "5", "6"]
 	
-	gd.addChoice("Dilation?", dilationOptions, "0")
-	gd.addCheckbox("Size exclusion of ROI? ", False)
-	gd.addSlider("Minimum ROI size", 0, 9999, 10, 1)
-	gd.addSlider("Maximum ROI size", 1, 10000, 10000, 1)
-	gd.addCheckbox("Watershed object splitting? ", True)
+	gd.addChoice("Dilation?", dilationOptions, str(dilation))
+	gd.addCheckbox("Size exclusion of ROI? ", sizeExclude)
+	gd.addSlider("Minimum ROI size", 0, 9999, minSize, 1)
+	gd.addSlider("Maximum ROI size", 1, 10000, maxSize, 1)
+	gd.addCheckbox("Watershed object splitting? ", watershed)
 	
 	
 	gd.addMessage("""Analysis settings:""")
+	backsubOpts=["Off", "Local label based", "Global mean"]
 	intensities=["254", "4094", "65534"]
-	gd.addChoice("Max intensity (saturation removal)", intensities, intensities[-1])
-	gd.addChoice("Background subtraction", ["Off", "Local label based", "Global mean"], "Off")
-	#gd.addCheckbox("""Global average background subtraction? (for detector noise)""", False)
-	gd.addCheckbox("""Use pixel by pixel analysis? (for non-punctate sensors)""", False)
-	gd.addCheckbox("Create nearest point projection with outlines? ", True)
+	gd.addChoice("Max intensity (saturation removal)", intensities, str(maxIntensity))
+	gd.addChoice("Background subtraction", backsubOpts, backsubOpts[backsubVal])
+	gd.addCheckbox("""Use pixel by pixel analysis? (for non-punctate sensors)""", pixelByPixel)
+	gd.addCheckbox("Create nearest point projection with outlines? ", makeNearProj)
+	gd.addCheckbox("Save segmentation and analysis settings? ", False)
 	gd.addMessage("""Please cite
 	
 	Rowe, J. H, Rizza, A., Jones A. M. (2021) Quantifying phytohormones
@@ -342,12 +355,13 @@ def previewDialog(imp):
 	labelPrevImp.close()
 	makeNearProj = gd.checkboxes.get(5).getState()
 	backSub= choices.get(7).getSelectedItem()
+	saveSettings = gd.checkboxes.get(6).getState()
 	backsubVal=0
 	if backSub=="Local label based":
 		backsubVal=1
 	if backSub=="Global mean":
 		backsubVal=2
-	return segmentChannel, donorChannel, acceptorChannel, acceptorChannel2, thresholdMethod, maxIntensity, gaussianSigma, largeDoGSigma, DoG,  manualSegment, manualThreshold, makeNearProj, dilation, sizeExclude, minSize, maxSize, watershed, backsubVal, pixelByPixel
+	return segmentChannel, donorChannel, acceptorChannel, acceptorChannel2, thresholdMethod, maxIntensity, gaussianSigma, largeDoGSigma, DoG,  manualSegment, manualThreshold, makeNearProj, dilation, sizeExclude, minSize, maxSize, watershed, backsubVal, pixelByPixel, saveSettings
 	
 def segment(gfx1,gfx2,gfx3,gfx4,gfx5, gaussianSigma, thresholdMethod, maxIntensity, largeDoGSigma, pixelAspect, originalTitle, DoG,  manualSegment, manualThreshold, dilation, sizeExclude, minSize, maxSize, watershed):
 	"""Segmentation based on user settings"""
@@ -661,9 +675,16 @@ clij2.clear()
 imp1= IJ.getImage()
 
 #define inputs (to be put in a dialog if I automate) 
-
-
-options= previewDialog(imp1)
+if exists('FRETENATOR2SegSettings.pckl'):
+	print('exists')
+	sf=file('FRETENATOR2SegSettings.pckl', 'rb')
+	options=pickle.load(sf)
+	sf.close()
+	print(options)
+else:
+	options=(3, 1, 2, 3, 'Otsu', 65534, 0.8, 4.0, True, False, 3000, True, 0, False, 10, 10000, True, 0, False, True)
+	
+options= previewDialog(imp1, options)
 
 #get the pixel aspect for use in zscaling kernels for filters
 cal = imp1.getCalibration()
@@ -676,7 +697,11 @@ IJ.log(originalTitle +" settings:")
 IJ.log("segmentChannel, donorChannel, acceptorChannel, acceptorChannel2, thresholdMethod, maxIntensity, gaussianSigma, largeDoGSigma, DoG, manualSegment, manualThreshold, makeNearProj, dilation, sizeExclude, minSize, maxSize, watershed, backSub:")
 IJ.log(str(options))
 
-segmentChannel, donorChannel, acceptorChannel, acceptorChannel2, thresholdMethod, maxIntensity, gaussianSigma, largeDoGSigma, DoG,  manualSegment, manualThreshold, makeNearProj, dilation, sizeExclude, minSize, maxSize, watershed, backSub, pixelByPixel =options
+segmentChannel, donorChannel, acceptorChannel, acceptorChannel2, thresholdMethod, maxIntensity, gaussianSigma, largeDoGSigma, DoG,  manualSegment, manualThreshold, makeNearProj, dilation, sizeExclude, minSize, maxSize, watershed, backSub, pixelByPixel, saveSettings =options
+if saveSettings==1:
+	sf=file('FRETENATOR2SegSettings.pckl', 'wb')
+	pickle.dump(options, sf)
+	sf.close()
 if pixelByPixel==1:
 	makeNearProj =0
 totalFrames=imp1.getNFrames() +1
@@ -744,7 +769,7 @@ stats=StackStatistics(conFRETImp2)
 conFRETImp2 = CompositeImage(conFRETImp2, CompositeImage.COMPOSITE)  
 IJ.setMinAndMax(conFRETImp2, 1000, 4000)
 conFRETImp2.show()
-IJ.run("000_Turbo2")
+IJ.run("16_colors")
 
 
 conFRETProjImp= ImagePlus( "Max Z  projection of emission ratios X1000 of "+ originalTitle, conFRETProjImpStack)
@@ -754,7 +779,7 @@ stats=StackStatistics(conFRETProjImp)
 IJ.setMinAndMax(conFRETProjImp, 1000, 4000)
 conFRETProjImp = CompositeImage(conFRETProjImp, CompositeImage.COMPOSITE)  
 conFRETProjImp.show()
-IJ.run("000_Turbo2")
+IJ.run("16_colors")
 
 conlabelImp= ImagePlus("Label map "+ originalTitle, conlabelImpStack)
 conlabelImp.setDimensions(1, imp1.getNSlices(), imp1.getNFrames())
@@ -770,4 +795,4 @@ if makeNearProj == True:
 	nearZImpOutlines = outline(conNearZImp,originalTitle)
 	IJ.setMinAndMax(nearZImpOutlines, 1000, 4000)
 	nearZImpOutlines.show()
-	IJ.run("000_Turbo2")
+	IJ.run("16_colors")
