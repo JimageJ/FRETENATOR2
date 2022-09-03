@@ -22,7 +22,11 @@ from java.lang 		import Thread
 from ij.plugin 		import Slicer
 import pickle
 from os.path 		import exists
+
+
 # *******************************functions************************************************
+
+
 def globalBackSub(labelGFX, quantGFX, otherGFX):
 	"""Requires a labelGFX image, the quantGFX to be quantified (also the output) and, one sacrificial otherGFX images"""
 	results=ResultsTable()
@@ -324,7 +328,6 @@ def previewDialog(imp, options):
 						gfx5=clij2.create(gfx1)
 						gfx7=clij2.create([imp.getWidth(), imp.getHeight()])
 				gfx1,gfx2,gfx3,gfx4,gfx5 = segment(gfx1,gfx2,gfx3,gfx4,gfx5, gaussianSigma, thresholdMethod, maxIntensity, largeDoGSigma, pixelAspect, originalTitle, DoG, manualSegment, manualThreshold, dilation,sizeExclude, minSize, maxSize, watershed)
-				#print (gfx1,gfx2,gfx3,gfx4,gfx5, gaussianSigma, thresholdMethod, maxIntensity, largeDoGSigma, pixelAspect, originalTitle, DoG, manualSegment, manualThreshold, dilation,sizeExclude, minSize, maxSize, watershed)
 				clij2.maximumZProjection(gfx5, gfx7)
 				labelPrevImp.close()
 				labelPrevImp= clij2.pull(gfx7)
@@ -391,20 +394,17 @@ def segment(gfx1,gfx2,gfx3,gfx4,gfx5, gaussianSigma, thresholdMethod, maxIntensi
 	clij2.connectedComponentsLabelingDiamond(gfx2, gfx4)
 
 	#dilate all the labeled watershed ROI out (only onto zero labeled pixels), then multiply this by original binary map, to get labeled ROI
-	for i in range(4):
-		#I'm not sure why it needs the second argument image (gfx3) here... It doesn't seem to affect the results...
-		clij2.onlyzeroOverwriteMaximumBox(gfx4, gfx3, gfx2) 
-		clij2.onlyzeroOverwriteMaximumDiamond(gfx2, gfx3, gfx4)
+	clij2.dilateLabels(gfx4, gfx2, 6)
 
-	clij2.multiplyImages(gfx4,gfx3, gfx2)
+	clij2.multiplyImages(gfx2,gfx3, gfx4)
 	
 	#label the missed ROI then add on the largest value from the other labelled image (so they can be combined)
-	watershedLabelMax =clij2.getMaximumOfAllPixels(gfx2)
-	clij2.connectedComponentsLabelingDiamond(gfx5, gfx4)
-	clij2.addImageAndScalar(gfx4, gfx5, (1 + watershedLabelMax))
+	watershedLabelMax =clij2.getMaximumOfAllPixels(gfx4)
+	clij2.connectedComponentsLabelingDiamond(gfx5, gfx2)
+	clij2.addImageAndScalar(gfx2, gfx5, (1 + watershedLabelMax))
 	
 	#delete the background and combine the two images
-	clij2.replaceIntensity(gfx5, gfx4,(1 + watershedLabelMax), 0)
+	clij2.replaceIntensity(gfx5, gfx2,(1 + watershedLabelMax), 0)
 	clij2.maximumImages(gfx4, gfx2, gfx5)
 	
 	#remove labeled objects that are too big or too small
@@ -414,18 +414,8 @@ def segment(gfx1,gfx2,gfx3,gfx4,gfx5, gaussianSigma, thresholdMethod, maxIntensi
 		
 	#dilate images
 	if dilation:
-		for i in range(dilation):
-			if (i % 2) == 0:
-				clij2.onlyzeroOverwriteMaximumDiamond(gfx5, gfx3, gfx4) 
-			else:
-				clij2.onlyzeroOverwriteMaximumBox(gfx5, gfx3, gfx4) 
-			clij2.copy(gfx4, gfx5)
-		for i in range(dilation):
-			if (i % 2) == 0:
-				clij2.onlyzeroOverwriteMaximumDiamond(gfx3, gfx5, gfx4) 
-			else:
-				clij2.onlyzeroOverwriteMaximumBox(gfx3, gfx5, gfx4) 
-			clij2.copy(gfx4, gfx3)
+		clij2.dilateLabels(gfx5, gfx4, dilation)
+		clij2.copy(gfx4, gfx5)
 	#gfx3 = threshold channel, gfx5 = label image, gfx1=original image, gfx2 & gfx4  are junk
 	clij2.closeIndexGapsInLabelMap(gfx5,gfx4)
 	return gfx1,gfx2,gfx3,gfx5, gfx4
@@ -556,7 +546,8 @@ def fretCalculations(imp1, nFrame, donorChannel, acceptorChannel, acceptorChanne
 		#Divide Z proj Acceptor by Z proj Donor and pull image
 		maxProj=clij2.create(gfx4.getWidth(), gfx4.getHeight(), 1)
 		clij2.divideImages(acceptorFSum, donorSum, maxProj)
-		FRETProjImp=clij2.pull(maxProj)
+		clij2.multiplyImageAndScalar(maxProj, donorSum,1000)
+		FRETProjImp=clij2.pull(donorSum)
 		
 		#pull acceptor and donor stacks to convert to 32 bit
 		acceptorImp=clij2.pull(gfx4)
@@ -572,7 +563,7 @@ def fretCalculations(imp1, nFrame, donorChannel, acceptorChannel, acceptorChanne
 		gfx2=clij2.push(donorImp)
 		gfx1=clij2.create(gfx2.getDimensions(), clij2.Float)
 		clij2.divideImages(gfx4, gfx2, gfx1)
-		
+		clij2.multiplyImageAndScalar(gfx1, gfx2,1000)
 		#pull ratio stack
 		FRETimp2=clij2.pull(gfx1)
 
@@ -796,3 +787,5 @@ if makeNearProj == True:
 	IJ.setMinAndMax(nearZImpOutlines, 1000, 4000)
 	nearZImpOutlines.show()
 	IJ.run("16_colors")
+
+clij2.clear()
