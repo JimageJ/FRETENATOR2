@@ -8,10 +8,10 @@ FRETENATOR2 implemented features:
   - Global mean subtraction
   - Local label based subtraction
 * Pixel by pixel processing
+* Setting saving
 
 Planned features:
 
 * 2D image processing
 * Quick segmentation settings button
-* Setting saving
 * Headless mode for batch
