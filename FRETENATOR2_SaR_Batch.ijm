@@ -6,7 +6,7 @@ setBatchMode(true);
 for (i=0; i<list.length; i++) {
 	showProgress(i+1, list.length);
 	open(dir1+list[i]);
-	run("FRETENATOR2 headless");
+	run("FRETENATOR2_SaR_Headless.py");
 	
 	for (j=0;j<nImages;j++) {
 	        selectImage(j+1);
