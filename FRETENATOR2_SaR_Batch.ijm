@@ -1,4 +1,5 @@
 dir1 = getDirectory("Choose Source Directory ");
+
 dir2 = getDirectory("Choose Destination Directory ");
 list = getFileList(dir1);
 //setBatchMode(true);
@@ -21,6 +22,7 @@ for (i=0; i<list.length; i++) {
 	        saveAs("tiff", dir2+title);
 	};	
 	run("Close All");
-	
-
+	selectWindow("Results of "+list[i]);
+	saveAs("Results",dir2+"Results of "+list[i]+".csv");
+	run("Clear Results");
 }
