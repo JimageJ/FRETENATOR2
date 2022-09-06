@@ -1,9 +1,13 @@
 dir1 = getDirectory("Choose Source Directory ");
-
 dir2 = getDirectory("Choose Destination Directory ");
 list = getFileList(dir1);
-setBatchMode(true);
+//setBatchMode(true);
 for (i=0; i<list.length; i++) {
+	while(nImages>0){
+	run("Close All");
+	wait(1000);
+	print("wait");
+	}
 	showProgress(i+1, list.length);
 	open(dir1+list[i]);
 	run("FRETENATOR2 SaR Headless");
