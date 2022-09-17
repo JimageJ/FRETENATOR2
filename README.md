@@ -1,4 +1,5 @@
-# FRETENATOR2
+# FRETENATOR2- Comprehensive segmenation and ratiometric analysis
+
 Latest version of FRETENATOR segmentation and ratiometric analysis suite. This is currently a prerelease version.
 
 FRETENATOR2 implemented features:
