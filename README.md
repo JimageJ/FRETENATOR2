@@ -11,9 +11,9 @@ FRETENATOR2 implemented features:
 * Pixel by pixel processing
 * Setting saving/reloading
 * Headless mode for batch
-
+* 2D image processing
 
 Possible planned features:
 
-* 2D image processing
 * Quick segmentation settings button
+* Cell type classification
