@@ -12,6 +12,7 @@ FRETENATOR2 implemented features:
 * Setting saving/reloading
 * Headless mode for batch
 * 2D image processing
+* 32 bit emission ratio image outputs (no 1000X multiplication)
 
 Possible planned features:
 
