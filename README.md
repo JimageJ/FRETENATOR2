@@ -26,6 +26,7 @@ Install CLIJ and CLIJ2 by activating their update sites, then copy the **'FRETEN
 
 
 # **Usage**:
+
 *FRETENATOR2 Segment and ratio* is a powerful plugin to quickly perform ratiometric analysis of 2D, 3D or 4D microscopy images,  with an new user interface and a live updating preview. The plugin performs full 3D segmentation of images, which means you don't analyse background, and does all the analysis, ready for you to plot and interpret. The algorithm can be used to analyse punctate sensors (e.g. nuclear localised) on a per object basis, or diffuse sensors (e.g. cytoplasmic) on a pixel by pixel basis, with guideline settings below. Saturated pixels are automatically removed. Settings can be saved and used for headless processing, or even batch (alpha).
 
 • Results Table:    ◦ Includes the ratiometric calculation (emission ratio) your channel quantifications, and x, y, z positions. This can be saved as a .csv and then analysed in python, R or excel.
@@ -44,12 +45,17 @@ Install CLIJ and CLIJ2 by activating their update sites, then copy the **'FRETEN
 
 
 **FRETENATOR2 SEGMENT AND RATIO TUTORIAL** 
+
 https://www.youtube.com/watch?v=OdPR_2kKuzg
 
 **Setting LUTs and making a colourbar**
+
 https://www.youtube.com/watch?v=rTH1vWirORI
 
-**Localised sensors, e.g. Nuclei**
+
+**Settings for localised sensors, e.g. Nuclei**
+
+
 Switch on 'Difference of Gaussian instead of Gaussian'
 
 Set the small DoG filter between 0.5-1.2, and the large DoG filter about half the diameter of a typical nucleus in pixels
@@ -63,7 +69,9 @@ Switch OFF 'Use pixel by pixel analysis' to allow quantification to be performed
 Max intensity: 4094 for 12 bit images, 65534 for 16 bit images
 
 
-**Cytoplasmic sensors**
+**Settings for diffuse sensors (e.g. cytoplasmic)**
+
+
 Switch OFF 'Difference of Gaussian instead of Gaussian'
 
 Set the small DoG filter between 0.5-1.2 the large DoG filter isn't used
@@ -99,6 +107,12 @@ There are two background subtraction methods. Global mean subtraction, subtracts
 ## **FRETENATOR2_SaR_Headless**
 
 Uses the last saved settings of FRETENATOR2_Segment_and_ratio, and performs analysis without opening a dialog box (faster).
+
+
+## **FRETENATOR2_SaR_Batch (alpha)**
+
+*Currently only reliable when run from the script editor* Uses the last saved settings of FRETENATOR2_Segment_and_ratio, and performs analysis on all images in a user defined folder, then exports the analysis into another user defined folder.
+
 
 ## **FRETENATOR_Labeller (Beta)**
 
