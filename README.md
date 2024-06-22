@@ -44,17 +44,17 @@ Install CLIJ and CLIJ2 by activating their update sites, then copy the **'FRETEN
 • Log:     ◦ Details of the image file and exact analysis settings used to keep with your metadata. Savable as a .txt file
 
 
-**FRETENATOR2 SEGMENT AND RATIO TUTORIAL** 
+# **FRETENATOR2 SEGMENT AND RATIO TUTORIAL** 
 
 https://www.youtube.com/watch?v=OdPR_2kKuzg
 
-**Setting LUTs and making a colourbar**
+# **Setting LUTs and making a colourbar**
 
 https://www.youtube.com/watch?v=rTH1vWirORI
 
 
 
-**Settings for localised sensors, e.g. Nuclei**
+# **Settings for localised sensors, e.g. Nuclei**
 
 
 Switch on 'Difference of Gaussian instead of Gaussian'
@@ -71,7 +71,7 @@ Max intensity: 4094 for 12 bit images, 65534 for 16 bit images
 
 
 
-**Settings for diffuse sensors (e.g. cytoplasmic)**
+# **Settings for diffuse sensors (e.g. cytoplasmic)**
 
 
 Switch OFF 'Difference of Gaussian instead of Gaussian'
