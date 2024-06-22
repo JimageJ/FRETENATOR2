@@ -25,7 +25,7 @@ Install CLIJ and CLIJ2 by activating their update sites, then copy the **'FRETEN
 ![nlsABACUS2 emission ratio, with calculations performed on a per object basis](https://github.com/JimageJ/FRETENATOR2/blob/main/imagefiles/image21.gif)
 
 
-# **Usage**:
+## **Usage**:
 
 *FRETENATOR2 Segment and ratio* is a powerful plugin to quickly perform ratiometric analysis of 2D, 3D or 4D microscopy images,  with an new user interface and a live updating preview. The plugin performs full 3D segmentation of images, which means you don't analyse background, and does all the analysis, ready for you to plot and interpret. The algorithm can be used to analyse punctate sensors (e.g. nuclear localised) on a per object basis, or diffuse sensors (e.g. cytoplasmic) on a pixel by pixel basis, with guideline settings below. Saturated pixels are automatically removed. Settings can be saved and used for headless processing, or even batch (alpha).
 
@@ -44,17 +44,17 @@ Install CLIJ and CLIJ2 by activating their update sites, then copy the **'FRETEN
 • Log:     ◦ Details of the image file and exact analysis settings used to keep with your metadata. Savable as a .txt file
 
 
-# **FRETENATOR2 SEGMENT AND RATIO TUTORIAL** 
+### **FRETENATOR2 SEGMENT AND RATIO TUTORIAL** 
 
 https://www.youtube.com/watch?v=OdPR_2kKuzg
 
-# **Setting LUTs and making a colourbar**
+### **Setting LUTs and making a colourbar**
 
 https://www.youtube.com/watch?v=rTH1vWirORI
 
 
 
-# **Settings for localised sensors, e.g. Nuclei**
+### **Settings for localised sensors, e.g. Nuclei**
 
 
 Switch on 'Difference of Gaussian instead of Gaussian'
@@ -71,7 +71,7 @@ Max intensity: 4094 for 12 bit images, 65534 for 16 bit images
 
 
 
-# **Settings for diffuse sensors (e.g. cytoplasmic)**
+### **Settings for diffuse sensors (e.g. cytoplasmic)**
 
 
 Switch OFF 'Difference of Gaussian instead of Gaussian'
