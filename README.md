@@ -53,6 +53,7 @@ https://www.youtube.com/watch?v=OdPR_2kKuzg
 https://www.youtube.com/watch?v=rTH1vWirORI
 
 
+
 **Settings for localised sensors, e.g. Nuclei**
 
 
@@ -67,6 +68,7 @@ Switch on 'Watershed Object splitting' if your nuclei are close together
 Switch OFF 'Use pixel by pixel analysis' to allow quantification to be performed on a per object basis
 
 Max intensity: 4094 for 12 bit images, 65534 for 16 bit images
+
 
 
 **Settings for diffuse sensors (e.g. cytoplasmic)**
