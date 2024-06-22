@@ -19,7 +19,10 @@ Install CLIJ and CLIJ2 by activating their update sites, then copy the **'FRETEN
 
 ## **FRETENATOR2_Segment_and_ratio**
 
-![nlsABACUS1-2u ABA treatment quantified and rendered with FRETENATOR](https://github.com/JimageJ/ImageJTools/blob/master/images/Nearest%20point%20emission%20ratios%20of%201-2%20concatenated%20drift%20corrected.gif)
+
+![nlsABACUS2 confocal image](https://github.com/JimageJ/FRETENATOR2/blob/main/imagefiles/image20.gif)
+![nlsABACUS2 segmentation performed with FRETENATOR](https://github.com/JimageJ/FRETENATOR2/blob/main/imagefiles/image22.gif)
+![nlsABACUS2 emission ratio, with calculations performed on a per object basis](https://github.com/JimageJ/FRETENATOR2/blob/main/imagefiles/image21.gif)
 
 
 # **Usage**:
@@ -74,6 +77,12 @@ Switch ON 'Use pixel by pixel analysis' to allow quantification to be performed 
 Max intensity: 4094 for 12 bit images, 65534 for 16 bit images
 
 
+
+![cytosolic ABACUS1 confocal image](https://github.com/JimageJ/FRETENATOR2/blob/main/imagefiles/PixelXPixel2.png)
+![cytosolic ABACUS1 analysed pixel by pixel](https://github.com/JimageJ/FRETENATOR2/blob/main/imagefiles/pixelXpixel1.png)
+
+
+
 ### Technical implementation (jargon)
 
 The segmentation tool works by a DoG or Gaussian filter, then Otsu to generate a binary map. An optional watershed can then be used to split objects, but a 3D watershed it a little too severe and causes the loss of many nuclei and many shrink down much smaller than their original size. By comparing my watershed to non watersheded binary maps I can create a map of the 'lost nuclei' to add them back in later. A connected components analysis is used to generate a label map of the watersheded nuclei, and then dilated the labelmap on zero pixels only to fill all the space. I then multiply this by the orginal threshold image to get a a good segmentation with good enough split objects. But this will give incorrect labelling to the 'lost nuclei' present in the image. To correct this, I run a connected components on the 'lost nuclei' map, to generate  labels, and add on the max value of the OTHER label map. Then I use maximumImage to superimpose these labels on the other label map to get my FINAL label map.
@@ -101,12 +110,12 @@ A follow on tool for after segmentations where users can categorise the ROI in t
 FRETENATOR ROI Labeller tutorial
 https://www.youtube.com/watch?v=EKXR4z5g8Pg
 
-![Stomata ROI labeled image after tracking with Trackmate](https://github.com/JimageJ/ImageJ-Tools/blob/master/images/labeled%20stomata.gif)
-
 ## **FRETENATOR_Trackmate_Bridge (Alpha)**
 
 A simple plugin to allow **Trackmate 7** analysed label images (Analyse the FRETENATOR label map for tracking then export the tracked label map as dots) to be combined with **FRETENATOR_Segment_and_ratio** output. This adds TrackIDs to the results table and creats a new TrackID labelmap that can be analysed with the ROI manager.
 
+![Stomata](https://github.com/JimageJ/FRETENATOR2/blob/main/imagefiles/image29.gif)
+![Stomata ROI labeled image after tracking with Trackmate](https://github.com/JimageJ/ImageJ-Tools/blob/master/images/labeled%20stomata.gif)
 
 ## **Troubleshooting**
 
