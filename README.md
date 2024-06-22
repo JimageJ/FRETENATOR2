@@ -35,12 +35,19 @@ Install CLIJ and CLIJ2 by activating their update sites, then copy the **'FRETEN
 *FRETENATOR2 Segment and ratio* is a powerful plugin to quickly perform ratiometric analysis of 2D, 3D or 4D microscopy images,  with an new user interface and a live updating preview. The plugin performs full 3D segmentation of images, which means you don't analyse background, and does all the analysis, ready for you to plot and interpret. The algorithm can be used to analyse punctate sensors (e.g. nuclear localised) on a per object basis, or diffuse sensors (e.g. cytoplasmic) on a pixel by pixel basis, with guideline settings below. Saturated pixels are automatically removed. Settings can be saved and used for headless processing, or even batch (alpha).
 
 • Results Table:    ◦ Includes the ratiometric calculation (emission ratio) your channel quantifications, and x, y, z positions. This can be saved as a .csv and then analysed in python, R or excel.
+
 • Threshold map:    ◦ An image of the initial thresholding use for analysis
+
 • Label map:    ◦ An image in which every nucleus is given a value that corresponds to the “label” in the results table.
+
 • Emission ratio map:    ◦ An image in which every nucleus is given the value of it’s emission ratio X 1000
+
 • Max Z projected emission ratio map:    ◦ A maximum Z projection of the emission ratio map
+
 • Nearest point emission ratio map:    ◦ A nearest point projection of the emission ratio map, with outlines added between the nuclei NB: the scale of this image is different to the original image and other images, allowing thin outlines to be drawn.
+
 • Log:     ◦ Details of the image file and exact analysis settings used to keep with your metadata. Savable as a .txt file
+
 
 **FRETENATOR2 SEGMENT AND RATIO TUTORIAL** 
 https://www.youtube.com/watch?v=OdPR_2kKuzg
