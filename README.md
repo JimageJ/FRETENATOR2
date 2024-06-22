@@ -48,19 +48,31 @@ https://www.youtube.com/watch?v=rTH1vWirORI
 
 **Localised sensors, e.g. Nuclei**
 Switch on 'Difference of Gaussian instead of Gaussian'
+
 Set the small DoG filter between 0.5-1.2, and the large DoG filter about half the diameter of a typical nucleus in pixels
+
 Autosegmentation method : Otsu
+
 Switch on 'Watershed Object splitting' if your nuclei are close together
+
 Switch OFF 'Use pixel by pixel analysis' to allow quantification to be performed on a per object basis
+
 Max intensity: 4094 for 12 bit images, 65534 for 16 bit images
+
 
 **Cytoplasmic sensors**
 Switch OFF 'Difference of Gaussian instead of Gaussian'
+
 Set the small DoG filter between 0.5-1.2 the large DoG filter isn't used
+
 Autosegmentation method : Otsu
+
 Switch OFF 'Watershed Object splitting'
+
 Switch ON 'Use pixel by pixel analysis' to allow quantification to be performed on a per object basis
+
 Max intensity: 4094 for 12 bit images, 65534 for 16 bit images
+
 
 ### Technical implementation (jargon)
 
