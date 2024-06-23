@@ -82,7 +82,7 @@ Autosegmentation method : Otsu
 
 Switch OFF 'Watershed Object splitting'
 
-Switch ON 'Use pixel by pixel analysis' to allow quantification to be performed on a per object basis
+Switch ON 'Use pixel by pixel analysis' to allow quantification to be performed on a per pixel basis
 
 Max intensity: 4094 for 12 bit images, 65534 for 16 bit images
 
