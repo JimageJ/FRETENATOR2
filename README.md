@@ -12,8 +12,11 @@ Planned features
 Possible planned features:
 
 * Quick segmentation settings button, Cell type classification, Alternative segmentation methods
+* Additional quantification methods
   
 ### **Installation**
+
+Installation requires Fiji and takes between 5 and 15 minutes, depending on whether the user's copy of Fiji is up to date. FRETENATOR has been tested on Windows 10, 11, Ubuntu 20, 22, and MacOS. Typical hardware requirements are up to date video card drivers including OpenCL and enough graphics RAM (or shared RAM) to handle the image you wish to process (typically 5x the image size).
 
 Install CLIJ and CLIJ2 by activating their update sites. 
 * Click  Help>Update...
@@ -113,6 +116,10 @@ The chosen settings will then be applied to the time series and the data for emi
 The "nearest point Z projection" option has outline drawing between segmented objects. This will make pretty Z projections where the different objects are discernable and overlayed properly.
 
 There are two background subtraction methods. Global mean subtraction, subtracts the average intensity of the are excluded from segmentation in each channel from each pixel before performing calculation - this is good for the global background signal that is present in many camera/detector types. Local label based subtraction will process each ROI object individually, subtracting the average intensity of nearby pixels in the excluded area surrounding it, which is good for global background as well as local background such as light scattering/autofluorescence.
+
+## **FRETENATOR2_Segment_and_ratio_BT (Alpha)**
+
+A specialised version of FRETENATOR2_Segment_and_ratio, developed for Tang et al 2025, which measures the fluorescence of an additional channel, in a dilated area surrounding and including the original ROI. This allows nearby fluorescence to be quantified and is included on the results table. Please select 'Local Label Based' from the "Background Subtraction Method" to use this functionality. This will be added as a new column to the results table.
 
 ## **FRETENATOR2_SaR_Headless**
 
