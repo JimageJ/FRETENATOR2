@@ -8,10 +8,11 @@ New FRETENATOR2 implemented features:
 
 Planned features
 * 32 bit emission ratio image outputs (no 1000X multiplication)
+* WEKA-CLIJ based label classifier
 
 Possible planned features:
 
-* Quick segmentation settings button, Cell type classification, Alternative segmentation methods
+* Quick segmentation settings button, Alternative segmentation methods
 * Additional quantification methods
   
 ### **Installation**
