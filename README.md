@@ -10,6 +10,7 @@ Planned features
 * 32 bit emission ratio image outputs (no 1000X multiplication)
 * WEKA-CLIJ based label classifier
 * Re-editing and annotation through ROI editor
+* Separate 'Segment and quantify' plugin implementation
 
 Possible planned features:
 
