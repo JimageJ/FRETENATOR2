@@ -1,12 +1,10 @@
 """
 ******************************************************************************************
-		Written by Jim Rowe, Alexander Jones' lab (SLCU, Cambridge).
+			Written by Jim Rowe in collaboration with Alexander Jones
 								Started: 2022-08-01		
 							 		@BotanicalJim
-							james.rowe at slcu.cam.ac.uk
-									Version 0.1
-
-
+							james.rowe at sheffield.ac.uk
+									Version v2.01
 
 ******************************************************************************************
 """
@@ -20,8 +18,8 @@ from ij.measure 	import ResultsTable
 from array 			import array, zeros
 from java.lang 		import Thread
 from ij.plugin 		import Slicer
-import pickle
 from os.path 		import exists
+import json
 
 
 # *******************************functions************************************************
@@ -161,15 +159,11 @@ def previewDialog(imp, options):
 	gd.addCheckbox("""Use pixel by pixel analysis? (for non-punctate sensors)""", pixelByPixel)
 	gd.addCheckbox("Create nearest point projection with outlines? ", makeNearProj)
 	gd.addCheckbox("Save segmentation and analysis settings? ", False)
-	gd.addMessage("""Please cite
-	
-	Rowe, J. H, Rizza, A., Jones A. M. (2021) Quantifying phytohormones
-	in vivo with FRET biosensors and the FRETENATOR analysis toolset
+	gd.addMessage("""Please cite : Rowe, J. H, Rizza, A., Jones A. M. (2021)
 	https://doi.org/10.1007/978-1-0716-2297-1_17
 	
-	Rowe, JH., et al., Next-generation ABACUS biosensors reveal cellular
-	ABA dynamics driving root growth at low aerial humidity
-	""")
+	Rowe, J., et al. Nature Plants 9, 1103-1115 (2023) 
+	https://doi.org/10.1038/s41477-023-01447-4 """)
 	gd.setLocation(0,0)
 	gd.showDialog()
 
@@ -641,151 +635,152 @@ def outline(imp3, originalTitle):
 
 # *****************************body of code starts****************************************
 
-
-#give install instructions for CLIJ if not installed
-
-try: 
-	from net.haesleinhuepf.clij2 import CLIJ2
-
-except:
-	errorDialog("""This plugin requires clij2 to function. 
+if __name__ == "__main__":
 	
-	To install please follow these instructions: 
+	#give install instructions for CLIJ if not installed
 	
-	1. Click Help>Update> Manage update sites
-	2. Make sure the "clij2" update site is selected.
-	3. Click Close> Apply changes.
-	4. Close and reopen ImageJ""")
-
-
-clij2 = CLIJ2.getInstance()
-clij2.clear()
-
-
-#get the current image
-imp1= IJ.getImage()
-
-#define inputs (to be put in a dialog if I automate) 
-if exists('FRETENATOR2SegSettings.pckl'):
-	print('exists')
-	sf=file('FRETENATOR2SegSettings.pckl', 'rb')
-	options=pickle.load(sf)
-	sf.close()
-	print(options)
-else:
-	options=(3, 1, 2, 3, 'Otsu', 65534, 0.8, 4.0, True, False, 3000, True, 0, False, 10, 10000, True, 0, False, True)
+	try: 
+		from net.haesleinhuepf.clij2 import CLIJ2
 	
-options= previewDialog(imp1, options)
-
-#get the pixel aspect for use in zscaling kernels for filters
-cal = imp1.getCalibration()
-pixelAspect=(cal.pixelDepth/cal.pixelWidth)
-originalTitle=imp1.getTitle()
-
-
-
-IJ.log(originalTitle +" settings:")
-IJ.log("segmentChannel, donorChannel, acceptorChannel, acceptorChannel2, thresholdMethod, maxIntensity, gaussianSigma, largeDoGSigma, DoG, manualSegment, manualThreshold, makeNearProj, dilation, sizeExclude, minSize, maxSize, watershed, backSub:")
-IJ.log(str(options))
-
-segmentChannel, donorChannel, acceptorChannel, acceptorChannel2, thresholdMethod, maxIntensity, gaussianSigma, largeDoGSigma, DoG,  manualSegment, manualThreshold, makeNearProj, dilation, sizeExclude, minSize, maxSize, watershed, backSub, pixelByPixel, saveSettings =options
-if saveSettings==1:
-	sf=file('FRETENATOR2SegSettings.pckl', 'wb')
-	pickle.dump(options, sf)
-	sf.close()
-if pixelByPixel==1:
-	makeNearProj =0
-totalFrames=imp1.getNFrames() +1
-
-#table is the final results table
-table = ResultsTable()
-
-clij2 = CLIJ2.getInstance()
-clij2.clear()
-
-
-
-conThresholdStack=ImageStack(imp1.width, imp1.height)
-conFRETImp2Stack=ImageStack(imp1.width, imp1.height)
-conFRETProjImpStack=ImageStack(imp1.width, imp1.height)
-conlabelImpStack=ImageStack(imp1.width, imp1.height)
-conNearZStack=ImageStack(imp1.width*2, imp1.height*2)
-for nFrame in xrange(1, totalFrames):
-	clij2.clear()
-	segmentImp=extractChannel(imp1, segmentChannel, nFrame)
-	gfx1=clij2.push(segmentImp)
-	gfx2=clij2.create(gfx1)
-	gfx3=clij2.create(gfx1)
-	gfx4=clij2.create(gfx1)
-	gfx5=clij2.create(gfx1)
-	gfx1,gfx2,gfx3,gfx4,gfx5 = segment(gfx1,gfx2,gfx3,gfx4,gfx5, gaussianSigma, thresholdMethod,maxIntensity, largeDoGSigma, pixelAspect, originalTitle, DoG,manualSegment, manualThreshold, dilation,sizeExclude, minSize, maxSize, watershed)
-	
-	thresholdImp = clij2.pull(gfx3)
-	IJ.setMinAndMax(thresholdImp, 0,1)
-	thresholdImp.setCalibration(cal)
-	thresholdImp.setTitle("Binary mask of "+originalTitle)
-
-	table, FRETimp2, FRETProjImp, labelImp=fretCalculations(imp1, nFrame, donorChannel, acceptorChannel, acceptorChannel2, table, gfx5, gfx2, gfx3, gfx4, gfx1, originalTitle,backSub, pixelByPixel)
-
-	if makeNearProj == True:
-		nearZImp = nearestZProject(FRETimp2)
-		conNearZStack=concatStacks(conNearZStack,nearZImp)
-		nearZImp.close()
+	except:
+		errorDialog("""This plugin requires clij2 to function. 
 		
-	#add the images to concatenated stacks
-	conThresholdStack = concatStacks(conThresholdStack, thresholdImp)
-	conFRETImp2Stack=concatStacks(conFRETImp2Stack, FRETimp2)
-	conFRETProjImpStack=concatStacks(conFRETProjImpStack, FRETProjImp)
-	conlabelImpStack=concatStacks(conlabelImpStack, labelImp)
+		To install please follow these instructions: 
+		
+		1. Click Help>Update> Manage update sites
+		2. Make sure the "clij2" update site is selected.
+		3. Click Close> Apply changes.
+		4. Close and reopen ImageJ""")
 	
-	thresholdImp.close()
-	FRETimp2.close()
-	FRETProjImp.close()
-	labelImp.close()
-
-#Show the images and make the images pretty... I should have put in a function`
-
-conThresholdImp= ImagePlus( "Threshold image for "+ originalTitle, conThresholdStack)
-conThresholdImp.setDimensions(1,  imp1.getNSlices(), imp1.getNFrames())
-IJ.setMinAndMax(conThresholdImp, 0,1)
-conThresholdImp.setCalibration(cal)
-conThresholdImp = CompositeImage(conThresholdImp, CompositeImage.COMPOSITE)
-conThresholdImp.show()
-
-
-conFRETImp2 = ImagePlus( "Emission ratios X1000 of "+ originalTitle, conFRETImp2Stack)
-conFRETImp2.setDimensions(1, imp1.getNSlices(), imp1.getNFrames())
-conFRETImp2.setCalibration(cal)
-stats=StackStatistics(conFRETImp2)
-conFRETImp2 = CompositeImage(conFRETImp2, CompositeImage.COMPOSITE)  
-IJ.setMinAndMax(conFRETImp2, 1000, 4000)
-conFRETImp2.show()
-IJ.run("16_colors")
-
-
-conFRETProjImp= ImagePlus( "Max Z  projection of emission ratios X1000 of "+ originalTitle, conFRETProjImpStack)
-conFRETProjImp.setDimensions(1, 1, imp1.getNFrames())
-conFRETProjImp.setCalibration(cal)
-stats=StackStatistics(conFRETProjImp)
-IJ.setMinAndMax(conFRETProjImp, 1000, 4000)
-conFRETProjImp = CompositeImage(conFRETProjImp, CompositeImage.COMPOSITE)  
-conFRETProjImp.show()
-IJ.run("16_colors")
-
-conlabelImp= ImagePlus("Label map "+ originalTitle, conlabelImpStack)
-conlabelImp.setDimensions(1, imp1.getNSlices(), imp1.getNFrames())
-conlabelImp.setCalibration(cal)
-stats=StackStatistics(conlabelImp)
-conlabelImp = CompositeImage(conlabelImp, CompositeImage.COMPOSITE)  
-IJ.setMinAndMax(conlabelImp, 0,stats.max)
-conlabelImp.show()
-IJ.run("glasbey_inverted")
-
-if makeNearProj == True:
-	conNearZImp=ImagePlus("Nearest Z proj of  ratios of"+ originalTitle, conNearZStack)
-	nearZImpOutlines = outline(conNearZImp,originalTitle)
-	IJ.setMinAndMax(nearZImpOutlines, 1000, 4000)
-	nearZImpOutlines.show()
+	
+	clij2 = CLIJ2.getInstance()
+	clij2.clear()
+	
+	
+	#get the current image
+	imp1= IJ.getImage()
+	
+	#define inputs (to be put in a dialog if I automate) 
+	if exists('FRETENATOR2SegSettings.json'):
+		print('exists')
+		sf=file('FRETENATOR2SegSettings.json', 'rb')
+		options=json.load(sf)
+		sf.close()
+		print(options)
+	else:
+		options=(3, 1, 2, 3, 'Otsu', 65534, 0.8, 4.0, True, False, 3000, True, 0, False, 10, 10000, True, 0, False, True)
+		
+	options= previewDialog(imp1, options)
+	
+	#get the pixel aspect for use in zscaling kernels for filters
+	cal = imp1.getCalibration()
+	pixelAspect=(cal.pixelDepth/cal.pixelWidth)
+	originalTitle=imp1.getTitle()
+	
+	
+	
+	IJ.log(originalTitle +" settings:")
+	IJ.log("segmentChannel, donorChannel, acceptorChannel, acceptorChannel2, thresholdMethod, maxIntensity, gaussianSigma, largeDoGSigma, DoG, manualSegment, manualThreshold, makeNearProj, dilation, sizeExclude, minSize, maxSize, watershed, backSub:")
+	IJ.log(str(options))
+	
+	segmentChannel, donorChannel, acceptorChannel, acceptorChannel2, thresholdMethod, maxIntensity, gaussianSigma, largeDoGSigma, DoG,  manualSegment, manualThreshold, makeNearProj, dilation, sizeExclude, minSize, maxSize, watershed, backSub, pixelByPixel, saveSettings =options
+	if saveSettings==1:
+		sf=file('FRETENATOR2SegSettings.json', 'wb')
+		json.dump(options, sf)
+		sf.close()
+	if pixelByPixel==1:
+		makeNearProj =0
+	totalFrames=imp1.getNFrames() +1
+	
+	#table is the final results table
+	table = ResultsTable()
+	
+	clij2 = CLIJ2.getInstance()
+	clij2.clear()
+	
+	
+	
+	conThresholdStack=ImageStack(imp1.width, imp1.height)
+	conFRETImp2Stack=ImageStack(imp1.width, imp1.height)
+	conFRETProjImpStack=ImageStack(imp1.width, imp1.height)
+	conlabelImpStack=ImageStack(imp1.width, imp1.height)
+	conNearZStack=ImageStack(imp1.width*2, imp1.height*2)
+	for nFrame in xrange(1, totalFrames):
+		clij2.clear()
+		segmentImp=extractChannel(imp1, segmentChannel, nFrame)
+		gfx1=clij2.push(segmentImp)
+		gfx2=clij2.create(gfx1)
+		gfx3=clij2.create(gfx1)
+		gfx4=clij2.create(gfx1)
+		gfx5=clij2.create(gfx1)
+		gfx1,gfx2,gfx3,gfx4,gfx5 = segment(gfx1,gfx2,gfx3,gfx4,gfx5, gaussianSigma, thresholdMethod,maxIntensity, largeDoGSigma, pixelAspect, originalTitle, DoG,manualSegment, manualThreshold, dilation,sizeExclude, minSize, maxSize, watershed)
+		
+		thresholdImp = clij2.pull(gfx3)
+		IJ.setMinAndMax(thresholdImp, 0,1)
+		thresholdImp.setCalibration(cal)
+		thresholdImp.setTitle("Binary mask of "+originalTitle)
+	
+		table, FRETimp2, FRETProjImp, labelImp=fretCalculations(imp1, nFrame, donorChannel, acceptorChannel, acceptorChannel2, table, gfx5, gfx2, gfx3, gfx4, gfx1, originalTitle,backSub, pixelByPixel)
+	
+		if makeNearProj == True:
+			nearZImp = nearestZProject(FRETimp2)
+			conNearZStack=concatStacks(conNearZStack,nearZImp)
+			nearZImp.close()
+			
+		#add the images to concatenated stacks
+		conThresholdStack = concatStacks(conThresholdStack, thresholdImp)
+		conFRETImp2Stack=concatStacks(conFRETImp2Stack, FRETimp2)
+		conFRETProjImpStack=concatStacks(conFRETProjImpStack, FRETProjImp)
+		conlabelImpStack=concatStacks(conlabelImpStack, labelImp)
+		
+		thresholdImp.close()
+		FRETimp2.close()
+		FRETProjImp.close()
+		labelImp.close()
+	
+	#Show the images and make the images pretty... I should have put in a function`
+	
+	conThresholdImp= ImagePlus( "Threshold image for "+ originalTitle, conThresholdStack)
+	conThresholdImp.setDimensions(1,  imp1.getNSlices(), imp1.getNFrames())
+	IJ.setMinAndMax(conThresholdImp, 0,1)
+	conThresholdImp.setCalibration(cal)
+	conThresholdImp = CompositeImage(conThresholdImp, CompositeImage.COMPOSITE)
+	conThresholdImp.show()
+	
+	
+	conFRETImp2 = ImagePlus( "Emission ratios X1000 of "+ originalTitle, conFRETImp2Stack)
+	conFRETImp2.setDimensions(1, imp1.getNSlices(), imp1.getNFrames())
+	conFRETImp2.setCalibration(cal)
+	stats=StackStatistics(conFRETImp2)
+	conFRETImp2 = CompositeImage(conFRETImp2, CompositeImage.COMPOSITE)  
+	IJ.setMinAndMax(conFRETImp2, 1000, 4000)
+	conFRETImp2.show()
 	IJ.run("16_colors")
-
-clij2.clear()
+	
+	
+	conFRETProjImp= ImagePlus( "Max Z  projection of emission ratios X1000 of "+ originalTitle, conFRETProjImpStack)
+	conFRETProjImp.setDimensions(1, 1, imp1.getNFrames())
+	conFRETProjImp.setCalibration(cal)
+	stats=StackStatistics(conFRETProjImp)
+	IJ.setMinAndMax(conFRETProjImp, 1000, 4000)
+	conFRETProjImp = CompositeImage(conFRETProjImp, CompositeImage.COMPOSITE)  
+	conFRETProjImp.show()
+	IJ.run("16_colors")
+	
+	conlabelImp= ImagePlus("Label map "+ originalTitle, conlabelImpStack)
+	conlabelImp.setDimensions(1, imp1.getNSlices(), imp1.getNFrames())
+	conlabelImp.setCalibration(cal)
+	stats=StackStatistics(conlabelImp)
+	conlabelImp = CompositeImage(conlabelImp, CompositeImage.COMPOSITE)  
+	IJ.setMinAndMax(conlabelImp, 0,stats.max)
+	conlabelImp.show()
+	IJ.run("glasbey_inverted")
+	
+	if makeNearProj == True:
+		conNearZImp=ImagePlus("Nearest Z proj of  ratios of"+ originalTitle, conNearZStack)
+		nearZImpOutlines = outline(conNearZImp,originalTitle)
+		IJ.setMinAndMax(nearZImpOutlines, 1000, 4000)
+		nearZImpOutlines.show()
+		IJ.run("16_colors")
+	
+	clij2.clear()
