@@ -11,16 +11,15 @@ New FRETENATOR2 implemented features:
 * Headless mode for batch
 * 2D image processing
 
-Planned features
+2.5 implemented features (beta, requires CLIJx update site activation)
+* WEKA-CLIJ based label classifier training
+* WEKA-CLIJ based label classification
+* Re-editing and annotation through ROI labeller
+
+Planned features:
 * 32 bit emission ratio image outputs (no 1000X multiplication)
-* WEKA-CLIJ based label classifier
-* Re-editing and annotation through ROI editor
+* Quick segmentation settings button
 * Separate 'Segment and quantify' plugin implementation
-
-Possible planned features:
-
-* Quick segmentation settings button, Alternative segmentation methods
-* Additional quantification methods
   
 ### **Installation**
 
@@ -30,6 +29,7 @@ Install CLIJ and CLIJ2 by activating their update sites.
 * Click  Help>Update...
 * Click Manage update sites
 * Scroll down to C and make sure Clij and Clij2 are selected
+  * For 2.5 beta please also activate the CLIJx update sites
 * Accept the dialogs, allow installation, then restart ImageJ
 
 Click the green 'Code' button at the top right of this page. then click 'Dowload zip'
