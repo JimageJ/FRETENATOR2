@@ -31,7 +31,7 @@ import json
 from sys import path
 from java.lang.System import getProperty
 
-path.append(getProperty('fiji.dir') + '\\plugins\\FRETENATOR2.5_\FN2')
+path.append(getProperty('fiji.dir') + '\\plugins\\FRETENATOR2\v2.5')
 import FN2_Apply_Weka_to_labels as clsfr
 import FN2_Label_ROI_map_to_training_data as trningdata
 import FN2_Train_Weka_label_classifier as trnclsfr
