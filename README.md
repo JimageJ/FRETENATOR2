@@ -12,8 +12,9 @@ New FRETENATOR2 implemented features:
 * 2D image processing
 
 2.5 implemented features (beta, requires CLIJx update site activation)
-* WEKA-CLIJ based label classifier training
-* WEKA-CLIJ based label classification
+* CLIJx-Weka based label classifier training
+* CLIJx-Weka based label classification
+    *May switch to native Weka libraries for final version, to avoid deprecated CLIJx-Weka
 * Re-editing and annotation through ROI labeller
 
 Planned features:
