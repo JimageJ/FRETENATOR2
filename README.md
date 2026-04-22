@@ -16,6 +16,7 @@ New FRETENATOR2 implemented features:
 * CLIJx-Weka based label classification
     *May switch to native Weka libraries for final version, to avoid deprecated CLIJx-Weka
 * Re-editing and annotation through ROI labeller
+* Bug fixes
 
 Planned features:
 * 32 bit emission ratio image outputs (no 1000X multiplication)
