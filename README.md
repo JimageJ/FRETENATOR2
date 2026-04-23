@@ -31,12 +31,12 @@ Install CLIJ and CLIJ2 by activating their update sites.
 * Click  Help>Update...
 * Click Manage update sites
 * Scroll down to C and make sure Clij and Clij2 are selected
-  * For 2.5 beta please also activate the CLIJx update sites
+  * For 2.5 beta please also activate the CLIJx, and IJPB update sites
 * Accept the dialogs, allow installation, then restart ImageJ
 
 Click the green 'Code' button at the top right of this page. then click 'Dowload zip'
 
-Unzip the file and then copy  the **'FRETENATOR2-main'** folder into the Fiji/plugins folder and restart Fiji.
+Unzip the file and then copy the folder into the "...Fiji/plugins/" folder and restart Fiji **To use the 2.5 beta the file path must be "...Fiji/plugins/FRETENATOR2/"**
 
 ## **FRETENATOR2_Segment_and_ratio**
 
