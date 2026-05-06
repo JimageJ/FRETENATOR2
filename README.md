@@ -2,7 +2,7 @@
 
 Latest version of FRETENATOR segmentation and ratiometric analysis suite. This is currently a prerelease version.
 
-New FRETENATOR2 implemented features:
+New FRETENATOR2.5 implemented features:
 
 * Improved user interface,
 * Background subtraction (Global mean or Local label based)
@@ -10,15 +10,13 @@ New FRETENATOR2 implemented features:
 * Setting saving/reloading
 * Headless mode for batch
 * 2D image processing
-
-2.5 implemented features (beta, requires CLIJx update site activation)
-* CLIJx-Weka based label classifier training
-* CLIJx-Weka based label classification
-    *May switch to native Weka libraries for final version, to avoid deprecated CLIJx-Weka
+* WEKA based label classifier training, using graph features for context
+* WEKA based label classification
 * Re-editing and annotation through ROI labeller
 * Bug fixes
 
 Planned features:
+* Video tutorials of new interface/features
 * 32 bit emission ratio image outputs (no 1000X multiplication)
 * Quick segmentation settings button
 * Separate 'Segment and quantify' plugin implementation
@@ -31,12 +29,9 @@ Install CLIJ and CLIJ2 by activating their update sites.
 * Click  Help>Update...
 * Click Manage update sites
 * Scroll down to C and make sure Clij and Clij2 are selected
-  * For 2.5 beta please also activate the CLIJx, and IJPB update sites
+* Scroll down to F and make sure FRETENATOR2 is selected
+* Scroll down to I and make sure the IJPB is selected
 * Accept the dialogs, allow installation, then restart ImageJ
-
-Click the green 'Code' button at the top right of this page. then click 'Dowload zip'
-
-Unzip the file and then copy the folder into the "...Fiji/plugins/" folder and restart Fiji **To use the 2.5 beta the file path must be "...Fiji/plugins/FRETENATOR2/"**
 
 ## **FRETENATOR2_Segment_and_ratio**
 
