@@ -20,7 +20,7 @@ from ij.measure 	import ResultsTable
 from array 			import array, zeros
 from java.lang 		import Thread
 from ij.plugin 		import Slicer
-import pickle
+import json
 from os.path 		import exists
 
 
@@ -666,14 +666,16 @@ clij2.clear()
 imp1= IJ.getImage()
 
 #define inputs (to be put in a dialog if I automate) 
-if exists('FRETENATOR2SegSettings.pckl'):
+#define inputs (to be put in a dialog if I automate) 
+if exists('FRETENATOR2SegSettings.json'):
 	print('exists')
-	sf=file('FRETENATOR2SegSettings.pckl', 'rb')
-	options=pickle.load(sf)
+	sf=file('FRETENATOR2SegSettings.json', 'rb')
+	options=json.load(sf)
 	sf.close()
 	print(options)
 else:
 	options=(3, 1, 2, 3, 'Otsu', 65534, 0.8, 4.0, True, False, 3000, True, 0, False, 10, 10000, True, 0, False, True)
+		
 	
 
 
@@ -690,8 +692,8 @@ IJ.log(str(options))
 
 segmentChannel, donorChannel, acceptorChannel, acceptorChannel2, thresholdMethod, maxIntensity, gaussianSigma, largeDoGSigma, DoG,  manualSegment, manualThreshold, makeNearProj, dilation, sizeExclude, minSize, maxSize, watershed, backSub, pixelByPixel, saveSettings =options
 if saveSettings==1:
-	sf=file('FRETENATOR2SegSettings.pckl', 'wb')
-	pickle.dump(options, sf)
+	sf=file('FRETENATOR2SegSettings.json', 'wb')
+	json.dump(options, sf)
 	sf.close()
 if pixelByPixel==1:
 	makeNearProj =0
