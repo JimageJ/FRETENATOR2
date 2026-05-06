@@ -1,10 +1,10 @@
 """
 ******************************************************************************************
-		Written by Jim Rowe, Alexander Jones' lab (SLCU, Cambridge).
+	Written by Jim Rowe (U of Sheffield) in collaboration with Alexander Jones (SLCU, Cambridge)
 								Started: 2021-01-30	
 							 		@BotanicalJim
-							james.rowe at slcu.cam.ac.uk
-									Version 1.2
+							james.rowe at sheffield.ac.uk
+									Version 2
 
 ******************************************************************************************
 """
@@ -23,16 +23,26 @@ from ij.measure 			import ResultsTable
 from ij.gui 				import Overlay
 from ij.gui 				import TextRoi, Roi
 from java.lang 				import Thread
+from datetime 				import datetime  
+import os
+import json
+from weka.core import SerializationHelper,  Attribute, Instances, DenseInstance
+from weka.classifiers.trees import RandomForest
 
+
+from sys import path
+from java.lang.System import getProperty
+
+path.append(getProperty('fiji.dir') + '\\plugins\\FRETENATOR2')
+import FN2_Apply_Weka_to_labels as clsfr
+import FN2_Label_ROI_map_to_training_data as trningdata
+import FN2_Train_label_classifier as trnclsfr
 
 # *******************************classes*****************************************
 
 
 
 class previewLabelerAndListeners(ActionListener, AdjustmentListener):
-
-
-
 
 
 	'''Class which unique function is to handle the button clics'''
@@ -44,11 +54,15 @@ class previewLabelerAndListeners(ActionListener, AdjustmentListener):
 		self.stats=StackStatistics(imp2)
 		self.src=clij2.push(imp2)
 		self.cal = imp2.getCalibration()
-		self.size=int(self.stats.max)
-		print int(self.stats.max)
+		self.size=int(self.stats.max)+1
+		#print 'size' , int(self.stats.max)
 		self.labelValues=[1]*int(self.size)
 		self.labelValues[0]=0
-				
+			
+		self.frames=imp2.getNFrames()
+		self.sizedepth=imp2.getStackSize()/frames
+		self.dimensions = [self.width, self.height, self.sizedepth]		
+		
 		self.nucleiLabels=range(self.size)
 		self.results=ResultsTable()
 		
@@ -90,16 +104,8 @@ class previewLabelerAndListeners(ActionListener, AdjustmentListener):
 		
 		self.nucLoc= map(lambda i : self.ys[i] * width +self.xs[i], range(len(self.xs)))
 
-
-
-
-
 		"""labelPreviewImp -  label image preview; maxZPreviewImp - maxZ label preview; maxYPreviewImp - maxY label preview"""
-		
-		
-		
-		
-		
+	
 		self.slider1=slider1
 		self.slider2=slider2
 		self.slider3=slider3
@@ -175,6 +181,7 @@ class previewLabelerAndListeners(ActionListener, AdjustmentListener):
 				self.bottom=self.top
 				self.slider2.setValue(int(self.top))
 			return
+		
 			
 		if Source.label == "Set bottom":
 			self.top = self.slider1.getValue()
@@ -199,6 +206,83 @@ class previewLabelerAndListeners(ActionListener, AdjustmentListener):
 			self.bottom = self.labelPreviewImp.getCurrentSlice()
 			self.slider2.setValue(int(self.top))
 			self.slider1.setValue(int(self.bottom))
+			return
+		if Source.label == "Use pretrained classifier":
+		
+			labelFilePath ,	modelFilePath, headersFilePath=clsfr.fileSelectDialog()
+			rt=clsfr.createResultsTable(imp2,self.src, self.dimensions)
+			
+			with open(headersFilePath, 'r') as config_file:
+			    columns = json.load(config_file)
+			rtheadingsList = rt.getColumnHeadings().split()
+			columnChoices = []
+			
+			for i in range(len(columns)):
+				if columns[i] == True:
+					columnChoices.append(i)
+			#print columnChoices
+			rt2= clsfr.filteredResultsTable(rt, columnChoices)
+			
+			
+			
+			input_data, attributes= clsfr.convertTableToInstances(rt2)
+			labeledrois = clsfr.classify(modelFilePath, input_data, attributes )
+			
+			self.labelDict={0:[],1:[], 2:[], 3:[], 4:[], 5:[], 6:[], 7:[], 8:[], 9:[], 10:[], 11:[]}
+			for i,v in enumerate(labeledrois):
+				self.labelDict[v].append(i)
+			for key in self.labelDict:
+				for value in self.labelDict[int(key)]:
+					self.labelValues[value]=int(key)	
+			print self.labelDict
+			print self.labelValues
+			self.src=clij2.push(imp2)
+			self.renderPreview(0)
+			return		
+		if Source.label == "Use existing classified image":
+			ROIimageName= fileSelectDialog()
+			print(ROIimageName)
+			ROIimp= WM.getImage(ROIimageName)
+			self.labelDict=importROIImage(ROIimp, self.src)
+			for key in self.labelDict:
+				for value in self.labelDict[int(key)]:
+					self.labelValues[value]=int(key)	
+			self.renderPreview(0)
+			return
+		if Source.label == "Train classifier from this image":
+			rtc2 = trningdata.createTrainingResultsTable(imp2, self.labelPreviewImp)
+			rtc2.show('test')
+			
+			filePath=trnclsfr.folderSelectDialog()
+
+			
+			#rt.show("data")
+			rtheadingsList = rtc2.getColumnHeadings().split()
+			
+			columns = [False, False, False, False, False, False, False, True, True, True, False, False, False, False, False, True, False, False, False, False, False, False, False, False, False, False, False, True, True, True, True, False, False, False, False, True, True, True, False, False, False, False, True, True, True, False, False, False, False, False, False, False, False, False, True, False, False, False, False, False, False, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True]
+
+			columnChoices, columns= trnclsfr.chooseColumns(columns, rtheadingsList)
+			print columns
+			rtc3= trnclsfr.filteredResultsTable(rtc2, columnChoices)
+			
+			date= datetime.now().strftime("%Y-%m-%d-%H.%M")
+			rtc2.save(filePath + "/" + date + "labels.csv")
+			
+			training_data, attributes= trnclsfr.convertTableToInstances(rtc3)
+			
+			classifier = RandomForest() 
+			classifier.setNumIterations(200)
+			classifier.setNumFeatures(5)
+			classifier.setMaxDepth(1)
+			classifier.buildClassifier(training_data)
+			SerializationHelper.write(filePath + "/" + date + " classifier.model", classifier)  
+			
+		
+			with open(filePath+"/"+date+' classifier_fileheaders.json', 'w') as f:
+				#	f.write(str(columns))
+				json.dump(columns, f)
+			
+			self.src=clij2.push(imp2)
 			return
 		
 		if Source.label[:5]=="label":
@@ -240,13 +324,10 @@ class previewLabelerAndListeners(ActionListener, AdjustmentListener):
 			pixels2=filter(lambda i :self.vol[i] >= self.minSize, pixels2)		
 			self.nucleiLabels=map(lambda i : i,pixels2)
 
-			#print(map(lambda i:self.zs[i], pixels2))
-			#print len(pixels2)
 
 			
 			self.labelDict[s] =self.nucleiLabels+self.labelDict[s]
 			self.labelDict[s] =sorted(list(set(self.labelDict[s])))
-			
 			
 			for key in self.labelDict:
 				if key != s :
@@ -275,7 +356,7 @@ class previewLabelerAndListeners(ActionListener, AdjustmentListener):
 		Source = event.getSource()
 		
 		try: self.slider1=self.gd.getSliders().get(0)
-		except: print "huh?"
+		except:  "huh?"
 		try: self.slider2=self.gd.getSliders().get(1)
 		except: print "huh?2"
 		
@@ -371,16 +452,29 @@ def dialog(imp2, labelColorBarImp):
 	slider4=0
 	test=previewLabelerAndListeners(imp2, slider1,slider2,slider3,slider4, gd)
 	
-
+	gd.addMessage("Assign selection to:")
+	gd.addMessage("	")
 	for i in range(1,categories):
 		gd.addButton("label "+str(i), test)
 		
-	gd.addImage(labelColorBarImp)
+
 	#imp7.close() - causes an error as image needed for the dialog
+	
+	gd.addMessage("Automatic labelling:")
+	gd.addMessage("	")
+	gd.addButton("Use pretrained classifier", test)
+	gd.addButton("Use existing classified image", test)
+	gd.addButton("Train classifier from this image", test)
+	gd.addMessage("	")
+	
+	gd.addMessage("Z labelling controls:")
+	gd.addMessage("	")
 	gd.addButton("Set top",test)
 	gd.addButton("Whole stack",test)
 	gd.addButton("Set bottom", test)
-	
+	gd.addMessage("	")
+	gd.addMessage("			Label colour key:")
+	gd.addImage(labelColorBarImp)
 
 	
 	gd.addSlider("Top",1, imp2.getStackSize(), 1)
@@ -403,8 +497,6 @@ def dialog(imp2, labelColorBarImp):
 
 	gd.addChoice("Apply labeling to:", ["(Sub)stack", "Slice"], "(Sub)stack")
 
-
-
 	
 	gd.setLayout(GridLayout(0,2))
 	
@@ -415,7 +507,7 @@ def dialog(imp2, labelColorBarImp):
 
 
 	while ((not gd.wasCanceled()) and not (gd.wasOKed())):
-		Thread.sleep(50)	
+		Thread.sleep(50)
 	return test
 
 
@@ -435,7 +527,7 @@ def selectionDialog(categories,labelColorBarImp):
 	for i in range(categories):
 		gd.addStringField("Label "+str(i) +" name:", "Label "+str(i))
 
-	gd.addChoice("Quantify an open image or add labels to open results table?", ["Image", "Results table"], "Results table")
+	gd.addChoice("Quantify selected image or add labels to open results table?", ["Image", "Results table"], "Results table")
 	
 	#quantImp= IJ.getImage(gd.getNextChoice())
 	
@@ -488,120 +580,146 @@ def createLabelColorBar():
 
 	return imp7
 
+def importROIImage(roiimp, src):
+	rt=ResultsTable()
+	roigtx2=clij2.push(roiimp)
+	clij2.statisticsOfBackgroundAndLabelledPixels(roigtx2,src, rt)
+	labeledrois =  rt.getColumn('MEAN_INTENSITY')
+	labelDict={0:[],1:[], 2:[], 3:[], 4:[], 5:[], 6:[], 7:[], 8:[], 9:[], 10:[], 11:[]}
+	for i,v in enumerate(labeledrois):
+		labelDict[v].append(i)
+	return labelDict
+
+
+def fileSelectDialog():
+	"""Select roi map"""
+	imps = WM.getImageTitles()
+	gdFS = GenericDialogPlus("Select ROI map")	
+	gdFS.addChoice("ROI map to import", imps, imps[0])
+	
+	gdFS.showDialog()
+	imageName=gdFS.getNextChoice()
+	if gdFS.wasCanceled():
+		imageName= 0
+	return 	imageName
+
 # *****************************body of code starts****************************************
-
-
-clij2 = CLIJ2.getInstance()
-clij2.clear()
-
-imp1=IJ.getImage()
-height=imp1.getHeight()
-width=imp1.getWidth()
-depth=imp1.getStackSize()
-frames=imp1.getNFrames()
-
-
-
-if frames > 1:
-	imp2 = extractFrame(imp1, 1)
-else:
-	imp2=imp1
-stats=StackStatistics(imp2)
-labelColorBarImp= createLabelColorBar()
-categories=11
-#print dir(WM)
-test = dialog(imp2, labelColorBarImp)
-
-names, imageName, resultsName, imageOrTable = selectionDialog(categories,labelColorBarImp)
-
-listOfNames  =["Untracked"]*65535
-
-names[11]='Untracked'
-print 'names'
-print names
-
-invertedDict=dict()
-labelDict=test.labelDict
-
-
-for key in labelDict.keys():
 	
-	for value in labelDict[key]:
-		if value not in test.errors:
-			listOfNames[value]=names[key]
-			invertedDict[value]= key
-		else:
-			listOfNames[value]="Untracked"
-			invertedDict[value]= 11
-			
-print invertedDict
-
-if imageOrTable == "Results table":
-	rt = ResultsTable.getResultsTable(resultsName).clone()
-
-else:
-	measureImp=WM.getImage(imageName)
-	src2=clij2.push(measureImp)
-	rt = ResultsTable()
-	clij2.statisticsOfBackgroundAndLabelledPixels(src2, test.src,rt)
-	src2.close()
-	resultsName="Results table"
-
-try:
-	labels = rt.getColumn(rt.getColumnIndex('TrackID'))
-	frame = rt.getColumn(rt.getColumnIndex('Frame (Time)'))
-except:
-	try:
-		labels = rt.getColumn(rt.getColumnIndex('Label'))
-
-	except:
-		labels = rt.getColumn(rt.getColumnIndex('IDENTIFIER'))
-
-for i in range(len(labels)):
-	try:
-			rt.setValue("Label name", i,listOfNames[int(labels[i])])
-			rt.setValue("Label value", i,invertedDict[int(labels[i])])
-
-	except: 
-		print i
-
-rt.show(resultsName+ " with labels")
-clij2.clear()
-labelColorBarImp.close()
-imp1Stats=imp1.getStatistics()
-print imp1Stats.max
-tracked=[11]*int(65535)
-for i,v in enumerate(test.labelValues):
-	if value not in test.errors:
-		tracked[i]= v
+if __name__ == "__main__":
+		
+	
+	clij2 = CLIJ2.getInstance()
+	clij2.clear()
+	
+	imp1=IJ.getImage()
+	height=imp1.getHeight()
+	width=imp1.getWidth()
+	depth=imp1.getStackSize()
+	frames=imp1.getNFrames()
+	
+	
+	
+	if frames > 1:
+		imp2 = extractFrame(imp1, 1)
 	else:
-		tracked[i]= 11
-print test.labelValues
-fp= ShortProcessor(len(tracked), 1,tracked , None)
-
-labelerImp= ImagePlus("labeler", fp)
-src2=clij2.push(labelerImp)
-conLabeledStack=ImageStack(imp1.width, imp1.height)
-
-
-if frames>1:
-	for nFrame in range(1,frames+1):
-
-		imp3=extractFrame(imp1, nFrame)
-		src=clij2.push(imp3)
-		dst=clij2.create(src)
-		clij2.replaceIntensities(src, src2, dst)
-		LabeledImp=clij2.pull(dst)
-		conLabeledStack = concatStacks( conLabeledStack, LabeledImp)
-	concatLabeledImp= ImagePlus("Labeled "+imageName, conLabeledStack)
+		imp2=imp1
+	stats=StackStatistics(imp2)
+	labelColorBarImp= createLabelColorBar()
+	categories=11
+	#print dir(WM)
+	test = dialog(imp2, labelColorBarImp)
 	
-	ImageConverter.setDoScaling(0)
-	ImageConverter(concatLabeledImp).convertToGray16()
+	names, imageName, resultsName, imageOrTable = selectionDialog(categories,labelColorBarImp)
 	
-	IJ.setMinAndMax(concatLabeledImp, 0, 255)
-	concatLabeledImp.setCalibration(imp1.getCalibration())
-	concatLabeledImp.setDimensions(1, imp1.getNSlices(), imp1.getNFrames())
-	concatLabeledImp = CompositeImage(concatLabeledImp, CompositeImage.COMPOSITE)
-	concatLabeledImp.show()
-	IJ.run("glasbey_on_dark")
-	labelerImp.close()
+	test.maxZPreviewImp.close()
+	test.maxYPreviewImp.close()
+	listOfNames  =["Untracked"]*65535
+	
+	names[11]='Untracked'
+	
+	invertedDict=dict()
+	labelDict=test.labelDict
+	
+	
+	for key in labelDict.keys():
+		
+		for value in labelDict[key]:
+			if value not in test.errors:
+				listOfNames[value]=names[key]
+				invertedDict[value]= key
+			else:
+				listOfNames[value]="Untracked"
+				invertedDict[value]= 11
+				print 'not in labeldict'
+	
+	if imageOrTable == "Results table":
+		rt = ResultsTable.getResultsTable(resultsName).clone()
+	
+	else:
+		measureImp=WM.getImage(imageName)
+		src2=clij2.push(measureImp)
+		rt = ResultsTable()
+		clij2.statisticsOfBackgroundAndLabelledPixels(src2, test.src, rt)
+		src2.close()
+		resultsName="Results table"
+	
+	try:
+		labels = rt.getColumn(rt.getColumnIndex('TrackID'))
+		frame = rt.getColumn(rt.getColumnIndex('Frame (Time)'))
+	except:
+		try:
+			labels = rt.getColumn(rt.getColumnIndex('Label'))
+	
+		except:
+			labels = rt.getColumn(rt.getColumnIndex('IDENTIFIER'))
+	
+	for i in range(len(labels)):
+		try:
+				rt.setValue("Label name", i,listOfNames[int(labels[i])])
+				rt.setValue("Label value", i,invertedDict[int(labels[i])])
+	
+		except: 
+			print i, 'eye eye'
+	
+	rt.show(resultsName+ " with labels")
+	clij2.clear()
+	labelColorBarImp.close()
+	imp1Stats=imp1.getStatistics()
+	print imp1Stats.max
+	tracked=[11]*int(65535)
+	for i,v in enumerate(test.labelValues):
+		if value not in test.errors:
+			tracked[i]= v
+		else:
+			tracked[i]= 11
+	print test.labelValues
+	fp= ShortProcessor(len(tracked), 1,tracked , None)
+	
+	labelerImp= ImagePlus("labeler", fp)
+	src2=clij2.push(labelerImp)
+	conLabeledStack=ImageStack(imp1.width, imp1.height)
+	
+	
+	if frames>1:
+		for nFrame in range(1,frames+1):
+	
+			imp3=extractFrame(imp1, nFrame)
+			src=clij2.push(imp3)
+			dst=clij2.create(src)
+			clij2.replaceIntensities(src, src2, dst)
+			LabeledImp=clij2.pull(dst)
+			conLabeledStack = concatStacks( conLabeledStack, LabeledImp)
+		concatLabeledImp= ImagePlus("Labeled "+imageName, conLabeledStack)
+		
+		ImageConverter.setDoScaling(0)
+		ImageConverter(concatLabeledImp).convertToGray16()
+		
+		IJ.setMinAndMax(concatLabeledImp, 0, 255)
+		concatLabeledImp.setCalibration(imp1.getCalibration())
+		concatLabeledImp.setDimensions(1, imp1.getNSlices(), imp1.getNFrames())
+		concatLabeledImp = CompositeImage(concatLabeledImp, CompositeImage.COMPOSITE)
+		concatLabeledImp.show()
+		IJ.run("glasbey_on_dark")
+		labelerImp.close()
+	
+	labelColorBarImp.close()
