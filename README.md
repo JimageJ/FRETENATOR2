@@ -17,8 +17,12 @@ New FRETENATOR2.5 implemented features:
 
 Planned features:
 * Video tutorials of new interface/features
-* 32 bit emission ratio image outputs (no 1000X multiplication)
-* Quick segmentation settings button
+* Replace default Max projection with Average projection allowing manual ROI quantification _-implemented in next release_
+* 32 bit emission ratio image outputs (no 1000X multiplication) _-implemented in next release_
+* Background assigned as NaN allowing manual ROI quantification _-implemented in next release_
+* Improved pixel by pixel processing - Z projections will be a Average projection of the ratioed 3D image rather than Z sum projections ratioed _-implemented in next release_
+* Quick segmentation settings buttons
+* Options to save and load segmentation settings from files
 * Separate 'Segment and quantify' plugin implementation
   
 ### **Installation**
