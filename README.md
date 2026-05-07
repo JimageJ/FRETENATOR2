@@ -17,6 +17,7 @@ New FRETENATOR2.5 implemented features:
 
 Planned features:
 * Video tutorials of new interface/features
+* Help button linking to tutorials (this github readme) _-implemented in next release_
 * Replace default Max projection with Average projection allowing manual ROI quantification _-implemented in next release_
 * 32 bit emission ratio image outputs (no 1000X multiplication) _-implemented in next release_
 * Background assigned as NaN allowing manual ROI quantification _-implemented in next release_
