@@ -34,7 +34,7 @@ Install CLIJ and CLIJ2 by activating their update sites.
 * Click  Help>Update...
 * Click Manage update sites
 * Scroll down to C and make sure Clij and Clij2 are selected
-* Scroll down to F and make sure FRETENATOR2 is selected
+* Scroll down to F and make sure FRETENATOR2 is selected, **We are currently waiting for the FRETENATOR update site to be added to the index. If FRETENATOR is not there, click 'Add unlisted update site" and add _Name: FRETENATOR_ and _URL: https://sites.imagej.net/FRETENATOR/_ to activate the update site**
 * Scroll down to I and make sure the IJPB is selected
 * Accept the dialogs, allow installation, then restart ImageJ
 
