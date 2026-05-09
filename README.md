@@ -28,7 +28,7 @@ Planned features:
   
 ### **Installation**
 
-Installation requires Fiji and takes between 5 and 15 minutes, depending on whether the user's copy of Fiji is up to date. FRETENATOR has been tested on Windows 10, 11, Ubuntu 20, 22, and MacOS. Typical hardware requirements are up to date video card drivers including OpenCL and enough graphics RAM (or shared RAM) to handle the image you wish to process (typically 5x the image size).
+Installation requires Fiji and takes between 30s and 15 minutes, depending on whether the user's copy of Fiji is up to date. FRETENATOR has been tested on Windows 10, 11, Ubuntu 20, 22, and MacOS. Typical hardware requirements are up to date video card drivers including OpenCL and enough graphics RAM (or shared RAM) to handle the image you wish to process (typically 5x the image size).
 
 Install CLIJ and CLIJ2 by activating their update sites. 
 * Click  Help>Update...
