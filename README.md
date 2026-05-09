@@ -22,7 +22,7 @@ Planned features:
 * 32 bit emission ratio image outputs (no 1000X multiplication) _-implemented in next release_
 * Background assigned as NaN allowing manual ROI quantification _-implemented in next release_
 * Improved pixel by pixel processing - Z projections will be a Average projection of the ratioed 3D image rather than Z sum projections ratioed _-implemented in next release_
-* Quick segmentation settings buttons
+* Quick segmentation settings buttons _-implemented in next release_
 * Options to save and load segmentation settings from files
 * Separate 'Segment and quantify' plugin implementation
   
