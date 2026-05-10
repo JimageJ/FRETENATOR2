@@ -23,7 +23,7 @@ Planned features:
 * Background assigned as NaN allowing manual ROI quantification _-implemented in next release_
 * Improved pixel by pixel processing - Z projections will be a Average projection of the ratioed 3D image rather than Z sum projections ratioed _-implemented in next release_
 * Quick segmentation settings buttons _-implemented in next release_
-* Options to save and load segmentation settings from files
+* Options to save and load segmentation settings from files _-implemented in next release_
 * Separate 'Segment and quantify' plugin implementation
   
 ### **Installation**
