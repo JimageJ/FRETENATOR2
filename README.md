@@ -4,7 +4,7 @@ Latest version of FRETENATOR segmentation and ratiometric analysis suite. This i
 
 New FRETENATOR2.5 implemented features:
 
-* Improved user interface,
+* Improved user interface
 * Background subtraction (Global mean or Local label based)
 * Pixel by pixel processing
 * Setting saving/reloading
@@ -13,17 +13,17 @@ New FRETENATOR2.5 implemented features:
 * WEKA based label classifier training, using graph features for context
 * WEKA based label classification
 * Re-editing and annotation through ROI labeller
+* Help button linking to tutorials (this github readme)
+* Replace default Max projection with Average projection allowing manual ROI quantification
+* 32 bit emission ratio image outputs (no 1000X multiplication)
+* Background assigned as NaN allowing manual ROI quantification
+* Improved pixel by pixel processing - Z projections will be an average projection of the ratioed 3D image rather than Z sum projections ratioed 
+* Quick segmentation settings buttons
+* Options to save and load segmentation settings from files
 * Bug fixes
 
 Planned features:
 * Video tutorials of new interface/features
-* Help button linking to tutorials (this github readme) _-implemented in next release_
-* Replace default Max projection with Average projection allowing manual ROI quantification _-implemented in next release_
-* 32 bit emission ratio image outputs (no 1000X multiplication) _-implemented in next release_
-* Background assigned as NaN allowing manual ROI quantification _-implemented in next release_
-* Improved pixel by pixel processing - Z projections will be a Average projection of the ratioed 3D image rather than Z sum projections ratioed _-implemented in next release_
-* Quick segmentation settings buttons _-implemented in next release_
-* Options to save and load segmentation settings from files _-implemented in next release_
 * Separate 'Segment and quantify' plugin implementation
   
 ### **Installation**
