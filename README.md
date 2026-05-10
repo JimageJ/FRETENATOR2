@@ -7,16 +7,16 @@ New FRETENATOR2.5 implemented features:
 * Improved user interface
 * Background subtraction (Global mean or Local label based)
 * Pixel by pixel processing
-* Segmentation settings saving/reloading from files
+* Segmentation settings saving/loading and importing from files
 * Headless mode for batch
 * 2D image processing
 * WEKA based label classifier training and classification, using graph features for context
 * Re-editing and annotation through ROI labeller
 * Help button linking to tutorials (this github readme)
-* Replace default 'Max projection' with 'Average projection'
-* 32 bit emission ratio image outputs (no 1000X multiplication in 16 bit images) with background assigned as NaN allowing manual ROI quantification
+* Replaced default 'Max projection' with 'Average projection'
+* 32 bit emission ratio image outputs (no 1000X multiplied 16 bit images) with background now assigned as NaN allowing manual ROI quantification
 * Improved pixel by pixel processing - Z projections will be an average projection of the ratioed 3D image rather than Z sum projections ratioed 
-* Quick segmentation settings buttons
+* Quickload segmentation settings buttons
 * Bug fixes
 
 Planned features:
@@ -31,7 +31,7 @@ Install FRETENATOR and dependencies by activating their update sites:
 * Click  Help>Update...
 * Click Manage update sites
 * Scroll down to C and make sure Clij and Clij2 are selected
-* Scroll down to F and make sure FRETENATOR2 is selected, **We are currently waiting for the FRETENATOR update site to be added to the fiji index. If FRETENATOR is not there, click 'Add unlisted update site" and add _Name: FRETENATOR_ and _URL: https://sites.imagej.net/FRETENATOR/_ to activate the update site**
+* Scroll down to F and make sure FRETENATOR2 is selected, **We are currently waiting for the FRETENATOR update site to be added to the Fiji index. If FRETENATOR is not listed, click 'Add unlisted update site" and add _Name: FRETENATOR_ and _URL: https://sites.imagej.net/FRETENATOR/_ to activate the update site**
 * Scroll down to I and make sure the IJPB is selected
 * Accept the dialogs, allow installation, then restart ImageJ
 
@@ -49,13 +49,11 @@ Install FRETENATOR and dependencies by activating their update sites:
 
 • Results Table:    ◦ Includes the ratiometric calculation (emission ratio) your channel quantifications, and x, y, z positions. This can be saved as a .csv and then analysed in python, R or excel.
 
-• Threshold map:    ◦ An image of the initial thresholding use for analysis
-
 • Label map:    ◦ An image in which every nucleus is given a value that corresponds to the “label” in the results table.
 
 • Emission ratio map:    ◦ An image in which every nucleus is given the value of it’s emission ratio X 1000
 
-• Max Z projected emission ratio map:    ◦ A maximum Z projection of the emission ratio map
+• Average Z projected emission ratio map:    ◦ An average Z projection of the emission ratio map
 
 • Nearest point emission ratio map:    ◦ A nearest point projection of the emission ratio map, with outlines added between the nuclei NB: the scale of this image is different to the original image and other images, allowing thin outlines to be drawn.
 
@@ -69,40 +67,6 @@ https://www.youtube.com/watch?v=OdPR_2kKuzg
 ### **Setting LUTs and making a colourbar**
 
 https://www.youtube.com/watch?v=rTH1vWirORI
-
-
-
-### **Settings for localised sensors, e.g. Nuclei**
-
-
-Switch on 'Difference of Gaussian instead of Gaussian'
-
-Set the small DoG filter between 0.5-1.2, and the large DoG filter about half the diameter of a typical nucleus in pixels
-
-Autosegmentation method : Otsu
-
-Switch on 'Watershed Object splitting' if your nuclei are close together
-
-Switch OFF 'Use pixel by pixel analysis' to allow quantification to be performed on a per object basis
-
-Max intensity: 4094 for 12 bit images, 65534 for 16 bit images
-
-
-
-### **Settings for diffuse sensors (e.g. cytoplasmic)**
-
-
-Switch OFF 'Difference of Gaussian instead of Gaussian'
-
-Set the small DoG filter between 0.5-1.2 the large DoG filter isn't used
-
-Autosegmentation method : Otsu
-
-Switch OFF 'Watershed Object splitting'
-
-Switch ON 'Use pixel by pixel analysis' to allow quantification to be performed on a per pixel basis
-
-Max intensity: 4094 for 12 bit images, 65534 for 16 bit images
 
 
 
