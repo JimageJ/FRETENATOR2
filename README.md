@@ -7,19 +7,16 @@ New FRETENATOR2.5 implemented features:
 * Improved user interface
 * Background subtraction (Global mean or Local label based)
 * Pixel by pixel processing
-* Setting saving/reloading
+* Segmentation settings saving/reloading from files
 * Headless mode for batch
 * 2D image processing
-* WEKA based label classifier training, using graph features for context
-* WEKA based label classification
+* WEKA based label classifier training and classification, using graph features for context
 * Re-editing and annotation through ROI labeller
 * Help button linking to tutorials (this github readme)
-* Replace default Max projection with Average projection allowing manual ROI quantification
-* 32 bit emission ratio image outputs (no 1000X multiplication)
-* Background assigned as NaN allowing manual ROI quantification
+* Replace default 'Max projection' with 'Average projection'
+* 32 bit emission ratio image outputs (no 1000X multiplication in 16 bit images) with background assigned as NaN allowing manual ROI quantification
 * Improved pixel by pixel processing - Z projections will be an average projection of the ratioed 3D image rather than Z sum projections ratioed 
 * Quick segmentation settings buttons
-* Options to save and load segmentation settings from files
 * Bug fixes
 
 Planned features:
