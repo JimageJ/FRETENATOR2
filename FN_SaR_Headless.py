@@ -4,7 +4,7 @@
 								Started: 2022-08-01		
 							 		@BotanicalJim
 							james.rowe at slcu.cam.ac.uk
-									Version 0.1
+									Version 2.5 beta
 
 
 
