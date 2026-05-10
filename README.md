@@ -38,7 +38,7 @@ Install FRETENATOR and dependencies by activating their update sites:
 * Scroll down to I and make sure the IJPB is selected
 * Accept the dialogs, allow installation, then restart ImageJ
 
-## **FRETENATOR2_Segment_and_ratio**
+## **FN2_Segment_and_ratio**
 
 
 ![nlsABACUS2 confocal image](https://github.com/JimageJ/FRETENATOR2/blob/main/imagefiles/image20.gif)
@@ -65,7 +65,7 @@ Install FRETENATOR and dependencies by activating their update sites:
 • Log:     ◦ Details of the image file and exact analysis settings used to keep with your metadata. Savable as a .txt file
 
 
-### **FRETENATOR2 SEGMENT AND RATIO TUTORIAL** 
+### **FN2 SEGMENT AND RATIO TUTORIAL** 
 
 https://www.youtube.com/watch?v=OdPR_2kKuzg
 
@@ -131,17 +131,17 @@ There are two background subtraction methods. Global mean subtraction, subtracts
 
 A specialised version of FRETENATOR2_Segment_and_ratio, developed for Tang et al 2025, which measures the fluorescence of an additional channel, in a dilated area surrounding and including the original ROI. This allows nearby fluorescence to be quantified and is included on the results table. Please select 'Local Label Based' from the "Background Subtraction Method" to use this functionality. This will be added as a new column to the results table.
 
-## **FRETENATOR2_SaR_Headless**
+## **FN2_SaR_Headless**
 
 Uses the last saved settings of FRETENATOR2_Segment_and_ratio, and performs analysis without opening a dialog box (faster).
 
 
-## **FRETENATOR2_SaR_Batch (alpha)**
+## **FN2_SaR_Batch (alpha)**
 
 *Currently only reliable when run from the script editor* Uses the last saved settings of FRETENATOR2_Segment_and_ratio, and performs analysis on all images in a user defined folder, then exports the analysis into another user defined folder.
 
 
-## **FRETENATOR_Labeller (Beta)**
+## **FN2_ROI_Labeller (Beta)**
 
 ### Implementation and usage
 
