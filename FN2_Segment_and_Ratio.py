@@ -17,14 +17,86 @@ from ij.process 	import ImageProcessor, StackStatistics, ImageConverter, FloatPr
 from ij.measure 	import ResultsTable
 from array 			import array, zeros
 from java.lang 		import Thread
-from ij.plugin 		import Slicer
+from ij.plugin 		import Slicer, ZProjector
 from os.path 		import exists
 import json
-
-
+import math
+from java.awt.event	import ActionListener 
+from java.awt 		import GridLayout
 # *******************************functions************************************************
 
+class buttonClick(ActionListener):
+	"""Class which unique function is to handle the button clics"""
+	def __init__(self):
+		self.bypass = 0 
+		self.quickload = 0
+		self.save = 0 
+		self.load = 0
+	def actionPerformed(self, event): # self to state that the method will be associated to the class instances
+		self.bypass=0
+		# Check from where comes the event
+		source = event.getSource()
+		
 
+		# Do an action depending on the button clicked
+		if source.label == "Quickload nuclei settings":
+			self.thresholdMethod = 'Otsu'
+			self.gaussianSigma =1.2 
+			self.largeDoGSigma = 6.0
+			self.DoG =True
+			self.manualSegment= False
+			self.dilation=0
+			self.sizeExclude= False 
+			self.watershed = True
+			self.pixelByPixel = False
+			self.bypass = 1
+			self.quickload=1
+			# Do an action depending on the button clicked
+		if source.label == "Quickload diffuse settings":
+			self.thresholdMethod = 'Otsu'
+			self.gaussianSigma =2
+			self.largeDoGSigma = 6.0
+			self.DoG =False
+			self.manualSegment= False
+			self.dilation=0
+			self.sizeExclude= False 
+			self.watershed = False
+			self.pixelByPixel = True
+			self.bypass = 1 
+			self.quickload=1
+			self.load=0
+		if source.label == "Load settings file":
+			loadFilepath=self.fileSelectDialog()
+			if exists(loadFilepath):
+				print('exists')
+				sf=file(loadFilepath, 'rb')
+				self.options=json.load(sf)
+
+				print 'options loaded'
+			else: 
+				print 'failed to load'
+			self.bypass = 1			
+			self.load = 1
+			self.quickload = 0
+		if source.label == "Save settings file":
+			self.saveFilepath=self.fileSelectDialog()
+			self.save = 1
+			self.bypass = 1
+			self.quickload = 0
+			print self.saveFilepath
+			
+	def fileSelectDialog(self):
+		"""file location"""
+		gd = GenericDialogPlus("Select file location")
+		gd.addFileField("Select settings file .json file", "")
+		gd.showDialog()
+		
+		if gd.wasCanceled():
+			IJ.exit()
+		settingFilePath =gd.getNextString()
+	
+		return 	settingFilePath
+			
 def globalBackSub(labelGFX, quantGFX, otherGFX):
 	"""Requires a labelGFX image, the quantGFX to be quantified (also the output) and, one sacrificial otherGFX images"""
 	results=ResultsTable()
@@ -108,35 +180,48 @@ def previewDialog(imp, options):
 	types = []
 	for i in xrange(1, imp.getNChannels()+1):
 		types.append(str(i))
-		
+	gd.setInsets(0,0,0)
 	gd.addMessage("""Channel choices:""")
 	#user can pick which channel to base the segmentation on
 	if (segmentChannel<= len(types) and
 		donorChannel<= len(types) and
 		acceptorChannel<= len(types) and
 		acceptorChannel2<= len(types)):
-		gd.addChoice("Segmentation channel", types, str(segmentChannel))
-		gd.addChoice("Donor channel (denominator)", types, str(donorChannel))
-		gd.addChoice("Acceptor (FRET) channel (numerator)", types, str(acceptorChannel))
-		gd.addChoice("Acceptor channel", types, str(acceptorChannel2))
+			gd.setInsets(0,0,0)
+			gd.addChoice("Segmentation", types, str(segmentChannel))
+			gd.setInsets(0,0,0)
+			gd.addChoice("Donor (denominator)", types, str(donorChannel))
+			gd.setInsets(0,0,0)
+			gd.addChoice("Acceptor (FRET) (numerator)", types, str(acceptorChannel))
+			gd.setInsets(0,0,0)
+			gd.addChoice("Acceptor", types, str(acceptorChannel2))
 	else:
 		if len(types)>2:
-			gd.addChoice("Segmentation channel", types, types[2])
+			gd.setInsets(0,0,0)
+			gd.addChoice("Segmentation", types, types[2])
+			gd.setInsets(0,0,0)
 			gd.addChoice("Donor channel (denominator)", types, types[0])
-			gd.addChoice("Acceptor (FRET) channel (numerator)", types, types[1])
-			gd.addChoice("Acceptor channel", types, types[2])
+			gd.setInsets(0,0,0)
+			gd.addChoice("Acceptor (FRET) (numerator)", types, types[1])
+			gd.setInsets(0,0,0)
+			gd.addChoice("Acceptor", types, types[2])
 			#print('YAY')
 		else:
-			gd.addChoice("Segmentation channel", types, types[-1])
-			gd.addChoice("Donor channel (denominator)", types, types[0])
-			gd.addChoice("Acceptor (FRET) channel (numerator)", types, types[-1])
-			gd.addChoice("Acceptor channel", types, types[-1])
+			gd.setInsets(0,0,0)
+			gd.addChoice("Segmentation", types, types[-1])
+			gd.setInsets(0,0,0)
+			gd.addChoice("Donor (denominator)", types, types[0])
+			gd.setInsets(0,0,0)
+			gd.addChoice("Acceptor (FRET) (numerator)", types, types[-1])
+			gd.setInsets(0,0,0)
+			gd.addChoice("Acceptor", types, types[-1])
+	gd.setInsets(0,0,0)
 	gd.addMessage("""Segmentation settings:""")
 	methods=["Otsu","Default", "Huang", "Intermodes", "IsoData", "IJ_IsoData", "Li", "MaxEntropy", "Mean", "MinError", "Minimum", "Moments", "Percentile", "RenyiEntropy", "Shanbhag", "Triangle", "Yen"]
-	
-	gd.addCheckbox("Use difference of Gaussian instead of Gaussian?", DoG)
-	gd.addSlider("Small DoG/Gaussian sigma", 0.5, 10, gaussianSigma, 0.1)
-	gd.addSlider("Large DoG sigma", 0.5, 20, largeDoGSigma,0.1)
+	gd.setInsets(0,15,0)
+	gd.addCheckbox("Difference of Gaussian instead of Gaussian?", DoG)
+	gd.addSlider("Gaussian / DoG 1 sigma", 0.5, 10, gaussianSigma, 0.1)
+	gd.addSlider("DoG 2 sigma", 0.5, 20, largeDoGSigma,0.1)
 	gd.setModal(False)
 	gd.addChoice("Autosegmentation method", methods, thresholdMethod)
 	gd.addCheckbox("Manually set threshold? ", manualSegment)
@@ -150,21 +235,30 @@ def previewDialog(imp, options):
 	gd.addSlider("Maximum ROI size", 1, 10000, maxSize, 1)
 	gd.addCheckbox("Watershed object splitting? ", watershed)
 	
-	
+	gd.setInsets(0,0,0)
 	gd.addMessage("""Analysis settings:""")
 	backsubOpts=["Off", "Local label based", "Global mean"]
 	intensities=["254", "4094", "65534"]
-	gd.addChoice("Max intensity (saturation removal)", intensities, str(maxIntensity))
+	gd.addChoice("Saturation removal threshold", intensities, str(maxIntensity))
 	gd.addChoice("Background subtraction", backsubOpts, backsubOpts[backsubVal])
-	gd.addCheckbox("""Use pixel by pixel analysis? (for non-punctate sensors)""", pixelByPixel)
-	gd.addCheckbox("Create nearest point projection with outlines? ", makeNearProj)
-	gd.addCheckbox("Save segmentation and analysis settings? ", False)
-	gd.addMessage("""Please cite : Rowe, J. H, Rizza, A., Jones A. M. (2021)
-	https://doi.org/10.1007/978-1-0716-2297-1_17
+	gd.addCheckbox("""Use pixel by pixel analysis?""", pixelByPixel)
+	gd.addCheckbox("Create nearest point projection? ", makeNearProj)
+	gd.addCheckbox("Save settings as default? ", False)
+	buttonListener = buttonClick()
+	gd.addButton("Quickload nuclei settings", buttonListener)
+	gd.addButton("Quickload diffuse settings", buttonListener)
 	
-	Rowe, J., et al. Nature Plants 9, 1103-1115 (2023) 
+	gd.addButton("Load settings file", buttonListener)
+	gd.addButton("Save settings file", buttonListener)
+	gd.setInsets(0,0,0)
+	gd.addMessage("""For tutorials, click 'help'.
+	
+	https://doi.org/10.1007/978-1-0716-2297-1_17
 	https://doi.org/10.1038/s41477-023-01447-4 """)
+	gd.addHelp("https://github.com/JimageJ/FRETENATOR2/blob/main/README.md")
 	gd.setLocation(0,0)
+	#gd.setLayout(GridLayout(0,8))
+
 	gd.showDialog()
 
 		
@@ -261,10 +355,95 @@ def previewDialog(imp, options):
 	labelPrevImp.show()
 	
 	IJ.run("glasbey_inverted")
-	
+	buttonListener.bypass = 0
 	while ((not gd.wasCanceled()) and not (gd.wasOKed())):
 		
 
+	#IF SETTINGS ARE LOADED, REMAKE THE DIALOG TO APPLY THEM
+		if buttonListener.bypass ==1:
+
+			if buttonListener.quickload ==1:
+				thresholdMethod= buttonListener.thresholdMethod
+				gaussianSigma = buttonListener.gaussianSigma
+				largeDoGSigma = buttonListener.largeDoGSigma
+				DoG = buttonListener.DoG
+				manualSegment = buttonListener.manualSegment
+				dilation = buttonListener.dilation
+				sizeExclude= buttonListener.sizeExclude
+				watershed = buttonListener.watershed
+				pixelByPixel = buttonListener.pixelByPixel
+				buttonListener.quickload ==0
+			if buttonListener.load ==1:
+				segmentChannel, donorChannel, acceptorChannel, acceptorChannel2, thresholdMethod, maxIntensity, gaussianSigma, largeDoGSigma, DoG,  manualSegment, manualThreshold, makeNearProj, dilation, sizeExclude, minSize, maxSize, watershed, backSub, pixelByPixel, saveSettings =buttonListener.options
+			gd.dispose()
+			if buttonListener.save==1:
+				options= segmentChannel, donorChannel, acceptorChannel, acceptorChannel2, thresholdMethod, maxIntensity, gaussianSigma, largeDoGSigma, DoG,  manualSegment, manualThreshold, makeNearProj, dilation, sizeExclude, minSize, maxSize, watershed, backsubVal, pixelByPixel, saveSettings
+				sf=file(buttonListener.saveFilepath, 'wb')
+				json.dump(options, sf)
+				sf.close()
+			gd=GenericDialogPlus("FRETENATOR2: 2FRET2FURIOUSLY")
+	
+			gd.addMessage("Channel choices:")
+			#user can pick which channel to base the segmentation on
+
+			gd.setInsets(0,0,0)
+			gd.addChoice("Segmentation", types, str(segmentChannel))
+			gd.setInsets(0,0,0)
+			gd.addChoice("Donor (denominator)", types, str(donorChannel))
+			gd.setInsets(0,0,0)
+			gd.addChoice("Acceptor (FRET) (numerator)", types, str(acceptorChannel))
+			gd.setInsets(0,0,0)
+			gd.addChoice("Acceptor", types, str(acceptorChannel2))
+
+			gd.setInsets(0,0,0)
+			gd.addMessage("""Segmentation settings:""")
+			methods=["Otsu","Default", "Huang", "Intermodes", "IsoData", "IJ_IsoData", "Li", "MaxEntropy", "Mean", "MinError", "Minimum", "Moments", "Percentile", "RenyiEntropy", "Shanbhag", "Triangle", "Yen"]
+			gd.setInsets(0,15,0)
+			gd.addCheckbox("Difference of Gaussian instead of Gaussian?", DoG)
+			gd.addSlider("Gaussian / DoG 1 sigma", 0.5, 10, gaussianSigma, 0.1)
+			gd.addSlider("DoG 2 sigma", 0.5, 20, largeDoGSigma,0.1)
+			gd.setModal(False)
+			gd.addChoice("Autosegmentation method", methods, thresholdMethod)
+			gd.addCheckbox("Manually set threshold? ", manualSegment)
+			gd.addSlider("Manual threshold", 10, 65534, manualThreshold, 1)
+			
+			dilationOptions=["0", "1", "2","3", "4", "5", "6"]
+			
+			gd.addChoice("Dilation?", dilationOptions, str(dilation))
+			gd.addCheckbox("Size exclusion of ROI? ", sizeExclude)
+			gd.addSlider("Minimum ROI size", 0, 9999, minSize, 1)
+			gd.addSlider("Maximum ROI size", 1, 10000, maxSize, 1)
+			gd.addCheckbox("Watershed object splitting? ", watershed)
+			
+			gd.setInsets(0,0,0)
+			gd.addMessage("""Analysis settings:""")
+			backsubOpts=["Off", "Local label based", "Global mean"]
+			intensities=["254", "4094", "65534"]
+			gd.addChoice("Saturation removal threshold", intensities, str(maxIntensity))
+			gd.addChoice("Background subtraction", backsubOpts, backsubOpts[backsubVal])
+			gd.addCheckbox("""Use pixel by pixel analysis?""", pixelByPixel)
+			gd.addCheckbox("Create nearest point projection? ", makeNearProj)
+			gd.addCheckbox("Save settings as default? ", False)
+			buttonListener = buttonClick()
+			gd.addButton("Quickload nuclei settings", buttonListener)
+			gd.addButton("Quickload diffuse settings", buttonListener)
+			
+			gd.addButton("Load settings file", buttonListener)
+			gd.addButton("Save settings file", buttonListener)
+			gd.setInsets(0,0,0)
+			gd.addMessage("""For tutorials, click 'help'.
+			
+			https://doi.org/10.1007/978-1-0716-2297-1_17
+			https://doi.org/10.1038/s41477-023-01447-4 """)
+			gd.addHelp("https://github.com/JimageJ/FRETENATOR2/blob/main/README.md")
+			gd.setLocation(0,0)
+
+			gd.showDialog()
+			buttonListener.bypass = 0
+
+			choices=gd.getChoices()
+			sliders=gd.getSliders()
+			checkboxes=gd.getCheckboxes()
 		segmentChannel=int(choices.get(0).getSelectedItem())
 		donorChannel=int(choices.get(1).getSelectedItem())
 		acceptorChannel=int(choices.get(2).getSelectedItem())
@@ -288,7 +467,7 @@ def previewDialog(imp, options):
 		watershed = gd.checkboxes.get(3).getState()
 		#backSub = gd.checkboxes.get(4).getState()
 		pixelByPixel = gd.checkboxes.get(4).getState()
-	
+		
 		if (segmentChannelOld !=segmentChannel or
 			thresholdMethodOld !=thresholdMethod or
 			maxIntensityOld !=maxIntensity or
@@ -344,6 +523,10 @@ def previewDialog(imp, options):
 		minSizeOld=minSize
 		maxSizeOld=maxSize
 		watershedOld=watershed
+		buttonListener.bypass=0 
+		buttonListener.quickload = 0
+		buttonListener.save = 0 
+		buttonListener.load = 0
 		Thread.sleep(200)
 	if gd.wasCanceled():
 		clij2.clear()
@@ -358,6 +541,9 @@ def previewDialog(imp, options):
 		backsubVal=1
 	if backSub=="Global mean":
 		backsubVal=2
+	if gd.wasCanceled():
+		clij2.clear()
+		IJ.exit()
 	return segmentChannel, donorChannel, acceptorChannel, acceptorChannel2, thresholdMethod, maxIntensity, gaussianSigma, largeDoGSigma, DoG,  manualSegment, manualThreshold, makeNearProj, dilation, sizeExclude, minSize, maxSize, watershed, backsubVal, pixelByPixel, saveSettings
 	
 def segment(gfx1,gfx2,gfx3,gfx4,gfx5, gaussianSigma, thresholdMethod, maxIntensity, largeDoGSigma, pixelAspect, originalTitle, DoG,  manualSegment, manualThreshold, dilation, sizeExclude, minSize, maxSize, watershed):
@@ -474,7 +660,7 @@ def fretCalculations(imp1, nFrame, donorChannel, acceptorChannel, acceptorChanne
 	for i in xrange(len(acceptorChIntensity)):
 		if (acceptorChIntensity[i]>0) and (donorChIntensity[i]>0):
 			#don't write in the zeros to the results
-			FRET.append((1000*acceptorChIntensity[i]/donorChIntensity[i]))
+			FRET.append((float(acceptorChIntensity[i])/float(donorChIntensity[i])))
 			table.incrementCounter()
 			#frame, label and ER
 			table.addValue("Frame (Time)", nFrame)
@@ -508,19 +694,24 @@ def fretCalculations(imp1, nFrame, donorChannel, acceptorChannel, acceptorChanne
 	labelImp = clij2.pull(gfx1)
 	if pixelByPixel==0:
 		#write all the emission ratios to an array, push to an GFX image, use this to map emission ratios
-		FRET[0]=0
+		FRET[0]= float('nan')
+		#print FRET
 		FRETarray= array( "f", FRET)
 		fp= FloatProcessor(len(FRET), 1, FRETarray, None)
 		FRETImp= ImagePlus("FRETImp", fp)
 		gfx4=clij2.push(FRETImp)
+		gfx5.close()
+		gfx5=clij2.create(gfx1.getDimensions(), clij2.Float)
 		clij2.replaceIntensities(gfx1, gfx4, gfx5)
-		maxProj=clij2.create(gfx5.getWidth(), gfx5.getHeight(), 1)
-		clij2.maximumZProjection(gfx5, maxProj)
-		
-		
-		#pull the images
+
 		FRETimp2=clij2.pull(gfx5)
-		FRETProjImp=clij2.pull(maxProj)
+		
+		
+		project = ZProjector()
+		project.setMethod(ZProjector.AVG_METHOD)
+		project.setImage(FRETimp2) #imageplus
+		project.doProjection()
+		FRETProjImp = project.getProjection()
 		
 	else:
 		
@@ -531,17 +722,19 @@ def fretCalculations(imp1, nFrame, donorChannel, acceptorChannel, acceptorChanne
 		clij2.gaussianBlur3D(gfx2, gfx5, 1.1, 1.1, 1.1)
 		clij2.mask(gfx5, gfx1, gfx2)
 		
-		#create Z sum projected donor and acceptor images for Z-proj ratio calc -> may replace with a different technique later
-		donorSum=clij2.create(gfx4.getWidth(), gfx4.getHeight(), 1)
-		acceptorFSum=clij2.create(gfx4.getWidth(), gfx4.getHeight(), 1)
-		clij2.sumZProjection(gfx2, donorSum)
-		clij2.sumZProjection(gfx4, acceptorFSum)
-		
-		#Divide Z proj Acceptor by Z proj Donor and pull image
-		maxProj=clij2.create(gfx4.getWidth(), gfx4.getHeight(), 1)
-		clij2.divideImages(acceptorFSum, donorSum, maxProj)
-		clij2.multiplyImageAndScalar(maxProj, donorSum,1000)
-		FRETProjImp=clij2.pull(donorSum)
+#		#create Z sum projected donor and acceptor images for Z-proj ratio calc -> may replace with a different technique later
+#		donorSum=clij2.create(gfx4.getWidth(), gfx4.getHeight(), 1)
+#		acceptorFSum=clij2.create(gfx4.getWidth(), gfx4.getHeight(), 1)
+#		clij2.sumZProjection(gfx2, donorSum)
+#		clij2.sumZProjection(gfx4, acceptorFSum)
+#		
+#		#Divide Z proj Acceptor by Z proj Donor and pull image
+#		maxProj=clij2.create(gfx4.getWidth(), gfx4.getHeight(), 1)
+#		clij2.divideImages(acceptorFSum, donorSum, maxProj)
+#		clij2.multiplyImageAndScalar(maxProj, donorSum,1000)
+#		
+#		
+#		FRETProjImp=clij2.pull(donorSum)
 		
 		#pull acceptor and donor stacks to convert to 32 bit
 		acceptorImp=clij2.pull(gfx4)
@@ -560,6 +753,11 @@ def fretCalculations(imp1, nFrame, donorChannel, acceptorChannel, acceptorChanne
 		clij2.multiplyImageAndScalar(gfx1, gfx2,1000)
 		#pull ratio stack
 		FRETimp2=clij2.pull(gfx1)
+		project = ZProjector()
+		project.setMethod(ZProjector.AVG_METHOD)
+		project.setImage(FRETimp2) #imageplus
+		project.doProjection()
+		FRETProjImp = project.getProjection()
 
 	#clean up
 	clij2.clear()
@@ -577,22 +775,24 @@ def nearestZProject(imp1):
 	height=imp1.getHeight()
 	depth=imp1.getNSlices()
 	
-	topPixels=zeros('f', width * height)  
+	topPixels=array('f', [float('nan')]*width * height)  
 	
 	stack2=ImageStack( width, height)
 	for i in range(1,relicedImp.getNSlices()):
 		pixels= relicedStack.getPixels(i)
+
 		for x in xrange(width):
 			for pixel in xrange(x, x+width*(depth-1),width):
 				#after finding the first pixel above the threshold value, add the value to the list
-				if pixels[pixel] != 0:
-				
+
+				if math.isnan(pixels[pixel]) != True:
 					topPixels[i*width+x]=pixels[pixel]
 					#break from looping the y when 1st threshold pixel is found is met -> increases speed drastically! Otherwise need an if statement every loop...
 					break
 	
 	ip2=FloatProcessor(width, height, topPixels, None)
 	imp2=ImagePlus("Nearest point proj",ip2)
+	#imp2.show()
 	imp3= imp2.resize(imp2.getWidth()*2, imp2.getHeight()*2, 'none')
 	return imp3
 
@@ -625,7 +825,7 @@ def outline(imp3, originalTitle):
 		pixlist=[]
 		pixels1=stack1.getPixels(i+1)
 		#if pixel is different to the pixel to the left or above, set it to 0
-		pixels2=map(lambda j: pixels1[j] if pixels1[j]-pixels1[j-1]==0 and pixels1[j]-pixels1[j-width]==0 else 0, xrange(len(pixels1)))
+		pixels2=map(lambda j: pixels1[j] if pixels1[j]-pixels1[j-1]==0 and pixels1[j]-pixels1[j-width]==0 else float('nan'), xrange(len(pixels1)))
 		processor=FloatProcessor(width, height, pixels2, None)
 		stack2.addSlice(processor)
 	imp2=ImagePlus("Nearest point emission ratios of "+ originalTitle, stack2)
@@ -745,27 +945,7 @@ if __name__ == "__main__":
 	IJ.setMinAndMax(conThresholdImp, 0,1)
 	conThresholdImp.setCalibration(cal)
 	conThresholdImp = CompositeImage(conThresholdImp, CompositeImage.COMPOSITE)
-	conThresholdImp.show()
-	
-	
-	conFRETImp2 = ImagePlus( "Emission ratios X1000 of "+ originalTitle, conFRETImp2Stack)
-	conFRETImp2.setDimensions(1, imp1.getNSlices(), imp1.getNFrames())
-	conFRETImp2.setCalibration(cal)
-	stats=StackStatistics(conFRETImp2)
-	conFRETImp2 = CompositeImage(conFRETImp2, CompositeImage.COMPOSITE)  
-	IJ.setMinAndMax(conFRETImp2, 1000, 4000)
-	conFRETImp2.show()
-	IJ.run("16_colors")
-	
-	
-	conFRETProjImp= ImagePlus( "Max Z  projection of emission ratios X1000 of "+ originalTitle, conFRETProjImpStack)
-	conFRETProjImp.setDimensions(1, 1, imp1.getNFrames())
-	conFRETProjImp.setCalibration(cal)
-	stats=StackStatistics(conFRETProjImp)
-	IJ.setMinAndMax(conFRETProjImp, 1000, 4000)
-	conFRETProjImp = CompositeImage(conFRETProjImp, CompositeImage.COMPOSITE)  
-	conFRETProjImp.show()
-	IJ.run("16_colors")
+	#conThresholdImp.show()
 	
 	conlabelImp= ImagePlus("Label map "+ originalTitle, conlabelImpStack)
 	conlabelImp.setDimensions(1, imp1.getNSlices(), imp1.getNFrames())
@@ -776,11 +956,33 @@ if __name__ == "__main__":
 	conlabelImp.show()
 	IJ.run("glasbey_inverted")
 	
+	conFRETImp2 = ImagePlus( "Emission ratios of "+ originalTitle, conFRETImp2Stack)
+	conFRETImp2.setDimensions(1, imp1.getNSlices(), imp1.getNFrames())
+	conFRETImp2.setCalibration(cal)
+	stats=StackStatistics(conFRETImp2)
+	conFRETImp2 = CompositeImage(conFRETImp2, CompositeImage.COMPOSITE)  
+	IJ.setMinAndMax(conFRETImp2, 0, 5)
+	conFRETImp2.show()
+	IJ.run("mpl-inferno")
+	
+	
+	conFRETProjImp= ImagePlus( "Mean Z  projection of emission ratios X1000 of "+ originalTitle, conFRETProjImpStack)
+	print imp1.getNFrames()
+	conFRETProjImp.setDimensions(1, 1, imp1.getNFrames())
+	conFRETProjImp.setCalibration(cal)
+	stats=StackStatistics(conFRETProjImp)
+	IJ.setMinAndMax(conFRETProjImp, 0, 5)
+	conFRETProjImp = CompositeImage(conFRETProjImp, CompositeImage.COMPOSITE)  
+	conFRETProjImp.show()
+	IJ.run("mpl-inferno")
+	
+
+	
 	if makeNearProj == True:
 		conNearZImp=ImagePlus("Nearest Z proj of  ratios of"+ originalTitle, conNearZStack)
 		nearZImpOutlines = outline(conNearZImp,originalTitle)
-		IJ.setMinAndMax(nearZImpOutlines, 1000, 4000)
+		IJ.setMinAndMax(nearZImpOutlines, 1, 5)
 		nearZImpOutlines.show()
-		IJ.run("16_colors")
+		IJ.run("mpl-inferno")
 	
 	clij2.clear()
