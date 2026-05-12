@@ -31,7 +31,7 @@ Install FRETENATOR and dependencies by activating their update sites:
 * Click  Help>Update...
 * Click Manage update sites
 * Scroll down to C and make sure Clij and Clij2 are selected
-* Scroll down to F and make sure FRETENATOR2 is selected
+* Scroll down to F and make sure FRETENATOR is selected
 * Scroll down to I and make sure the IJPB is selected
 * Accept the dialogs, allow installation, then restart ImageJ
 
