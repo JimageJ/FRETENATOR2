@@ -4,7 +4,7 @@
 								Started: 2022-08-01		
 							 		@BotanicalJim
 							james.rowe at sheffield.ac.uk
-									Version v2.5 beta
+									Version v2.01
 
 ******************************************************************************************
 """
@@ -253,8 +253,8 @@ def previewDialog(imp, options):
 	gd.setInsets(0,0,0)
 	gd.addMessage("""For tutorials, click 'help'.
 	
-	https://doi.org/10.1007/978-1-0716-2297-1_17
-	https://doi.org/10.1038/s41477-023-01447-4 """)
+	Rowe (2022) Met Mol Bio | doi.org/10.1007/978-1-0716-2297-1_17
+	Rowe (2023) Nat Plants | doi.org/10.1038/s41477-023-01447-4 """)
 	gd.addHelp("https://github.com/JimageJ/FRETENATOR2/blob/main/README.md")
 	gd.setLocation(0,0)
 	#gd.setLayout(GridLayout(0,8))
@@ -527,6 +527,7 @@ def previewDialog(imp, options):
 		buttonListener.quickload = 0
 		buttonListener.save = 0 
 		buttonListener.load = 0
+		buttonListener.options = segmentChannel, donorChannel, acceptorChannel, acceptorChannel2, thresholdMethod, maxIntensity, gaussianSigma, largeDoGSigma, DoG,  manualSegment, manualThreshold, makeNearProj, dilation, sizeExclude, minSize, maxSize, watershed, backSub, pixelByPixel, saveSettings
 		Thread.sleep(200)
 	if gd.wasCanceled():
 		clij2.clear()
