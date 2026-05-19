@@ -18,10 +18,10 @@ New FRETENATOR2.5 implemented features:
 * Improved pixel by pixel processing - Z projections will be an average projection of the ratioed 3D image rather than Z sum projections ratioed 
 * Quickload segmentation settings buttons
 * Bug fixes
+* Separate 'Segment and intensity' plugin implementation to quantify the intensity of each channel for every ROI.
 
 Planned features:
 * Video tutorials of new interface/features
-* Separate 'Segment and quantify' plugin implementation
   
 ### **Installation**
 
