@@ -1,6 +1,6 @@
 # FRETENATOR2- Comprehensive segmenation and ratiometric analysis
 
-Latest version of FRETENATOR segmentation and ratiometric analysis suite. This is currently a prerelease version.
+Fiji plugins for segmentation, object classification, ratiometric analysis and intensiometric analysis. Includes a live updating GUI interface, a headless mode, a batch mode, object labelling, object classifier training and application and Trackmate 7 integration. This is under active development (as of 2026).
 
 New FRETENATOR2.5 implemented features:
 
