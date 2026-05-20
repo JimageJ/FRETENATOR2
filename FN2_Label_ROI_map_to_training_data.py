@@ -228,7 +228,7 @@ def createTrainingResultsTable(labelImp, roiImp):
 		rtc2.addValue("VOR_MAX_TOUCH_DISTANCE", rtcG.getColumn( "MAX_TOUCH_DISTANCE")[j])	
 		rtc2.addValue("VOR_MIN_TOUCH_DISTANCE", rtcG.getColumn( "MIN_TOUCH_DISTANCE")[j])	
 		
-		rtc2.addValue('LABEL_ID', 11)
+		rtc2.addValue('LABEL_ID', rtc.getColumn("MEAN_INTENSITY")[j])
 
 	touchMatixgtx.close()
 	distanceMatixgtx.close()
