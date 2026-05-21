@@ -34,7 +34,7 @@ Install FRETENATOR and dependencies by activating their update sites:
   * Scroll down to I and make sure the IJPB is selected
   * Accept the dialogs, allow installation, then restart ImageJ
 
-## **FN2_Segment_and_ratio**
+## **_FN2_Segment_and_ratio_**
 
 ![nlsABACUS2 confocal image](https://github.com/JimageJ/FRETENATOR2/blob/main/imagefiles/image20.gif)
 ![nlsABACUS2 segmentation performed with FRETENATOR](https://github.com/JimageJ/FRETENATOR2/blob/main/imagefiles/image22.gif)
@@ -77,18 +77,18 @@ The "nearest point Z projection" option has outline drawing between segmented ob
 
 There are two background subtraction methods. Global mean subtraction, subtracts the average intensity of the are excluded from segmentation in each channel from each pixel before performing calculation - this is good for the global background signal that is present in many camera/detector types. Local label based subtraction will process each ROI object individually, subtracting the average intensity of nearby pixels in the excluded area surrounding it, which is good for global background as well as local background such as light scattering/autofluorescence.
 
-## **FRETENATOR2_Segment_and_ratio_BT (Alpha)**
+## **_FRETENATOR2_Segment_and_ratio_BT_ (Alpha)**
 A specialised version of FRETENATOR2_Segment_and_ratio, developed for Tang et al 2025, which measures the fluorescence of an additional channel, in a dilated area surrounding and including the original ROI. This allows nearby fluorescence to be quantified and is included on the results table. Please select 'Local Label Based' from the "Background Subtraction Method" to use this functionality. This will be added as a new column to the results table.
 
 ## **FN2_SaR_Headless**
 Uses the last saved settings of FRETENATOR2_Segment_and_ratio, and performs analysis without opening a dialog box (faster).
 
 
-## **FN2_SaR_Batch (alpha)**
+## **_FN2_SaR_Batch_ (alpha)**
 *Currently only reliable when run from the script editor* Uses the last saved settings of FRETENATOR2_Segment_and_ratio, and performs analysis on all images in a user defined folder, then exports the analysis into another user defined folder.
 
 
-## **FN2_ROI_Labeller (Beta)**
+## **_FN2_ROI_Labeller_**
 
 ### Implementation and usage
 A follow on tool for after segmentations where users can categorise the ROI in their segmented images. As a work in progress, it currently works on single timepoint 3D label images, allowing users to visually assign labels to one of 10 categories. Results are either output to an existing results table or can be used to measure a chosen image. ***Alpha functionality:*** In the latest version, time course analysis can be performed, but usage asumes the same label usage through time (making it compatable with Trackmate exported files - see below).
@@ -97,7 +97,72 @@ A follow on tool for after segmentations where users can categorise the ROI in t
 FRETENATOR ROI Labeller tutorial
 https://www.youtube.com/watch?v=EKXR4z5g8Pg
 
-## **FRETENATOR_Trackmate_Bridge (Alpha)**
+**Training object classifiers in _FN2 ROI Labeller_**
+
+An object classifier can be trained directly from an individual label map and label preview image from the _FN2 ROI Labeller_. To train a classifier on more than one image, please use the separate _FN2 Label map to training data_ and _FN2 Train label classifier_ plugins.
+
+  * Fully annotate your image using manual methods.
+  * Click the 'Train classifier from this image' button. Wait a few seconds - generating initial training data can take up to a minute.
+  * Select the folder where you would like the training data and classifier saved.
+  * Choose all the parameters you would like the classifier trained on - if you're not sure what this means, just try the defaults!
+  * Click OK - your classifier should be trained within seconds. Three files will be generated and saved in the specified folder :
+     1. A copy of the training data in csv format. This can be reused to train classifiers from this image again in the future
+     2. A _date_classifier.model_ that contains the classifier which must be reloaded to apply the classifier to other images.
+     3. A _date_classifier_fileheaders.json_ that contains the chosen parameter headings which must be reloaded to apply the classifier to other images.
+
+**Applying pretrained classifiers in _FN2 ROI Labeller_**
+
+Existing object classifiers can be applied directly to individual label maps and FRETENATOR results tables from the _FN2 ROI Labeller_. To apply a classifier:
+
+  * Click the _Use pretrained classifer_ button.
+  * Leave the _Label map file location_ field blank.
+  * Select the _date_classifier.model_ file.
+  * Select the _date_classifier_fileheaders.json_ file.
+  * Click OK, applying a classifier typically takes 15s-1min.
+  * Check the classifier output and correct any mistakes.
+    
+To use pretrained classifiers on timeseries images, use the dedicated plugins instead of the _FN2 ROI Labeller_.
+
+## **_Training and applying object classifiers_**
+
+**Training**
+
+Training a classifier on a single image can be done from the _FN2 ROI Labeller_ but training a classifier on a multiple annotated images is a two stage process:
+
+  1. Generate training data using _FN2 Label map to training data_
+  2. Train the classifier on a folder of training data using the _FN2 Train label classifier_ plugin.
+
+**_FN2 Label map to training data_**
+
+To train a model, the training data from _Label maps_ and the annotated output of the _ROI Labeller_ must be generated and saved in the folder for model training. Training data from mutliple images can be saved to the same folder and will all be used in classifer training.
+
+  * Fully annotate your image using manual methods and have both images open in Fiji.
+  * Use the  _FN2 Label map to training data_ plugin.
+  * Select the label map and ROI map.
+  * Training data will be generated. This can take up to a minute.
+  * Click the file>save options on the training data window. Save this training data in your training folder as a csv.
+
+**_FN2 Train label classifier_**
+
+  * Select the folder where your training data csv files are saved, your classifier will be saved to the same folder.
+  * Choose all the parameters you would like the classifier trained on - if you're not sure what this means, just try the defaults!
+  * Click OK - your classifier should be trained within seconds. Two files will be generated and saved in the specified folder :
+     1. A _date_classifier.model_ that contains the classifier which must be reloaded to apply the classifier to other images.
+     2. A _date_classifier_fileheaders.json_ that contains the chosen parameter headings which must be reloaded to apply the classifier to other images.
+
+**Applying pretrained classifiers**
+
+Existing object classifiers can be applied directly to individual label maps and FRETENATOR results tables using the _FN2 Apply Weka to labels_. This version is compatible with timecourse images. To apply a classifier:
+
+  * Use the _FN2 Apply Weka to labels_ plugin.
+  * Leave the _Label map file location_ field blank to apply to the open selected image, or pick one from your harddrive.
+  * Select the _date_classifier.model_ file.
+  * Select the _date_classifier_fileheaders.json_ file.
+  * Click OK, applying a classifier typically takes 15s-1min.
+
+Note: output will be a ROI image and does not generate a results table... yet.
+
+## **_FRETENATOR_Trackmate_Bridge_ (Alpha)**
 
 A simple plugin to allow **Trackmate 7** analysed label images (Analyse the FRETENATOR label map for tracking then export the tracked label map as dots) to be combined with **FRETENATOR_Segment_and_ratio** output. This adds TrackIDs to the results table and creats a new TrackID labelmap that can be analysed with the ROI manager.
 
