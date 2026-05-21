@@ -49,7 +49,7 @@ Install FRETENATOR and dependencies by activating their update sites:
   * Emission ratio map:    ◦ An image in which every nucleus is given the value of it’s emission ratio
   * Average Z projected emission ratio map:    ◦ An average Z projection of the emission ratio map
   * Nearest point emission ratio map:    ◦ A nearest point projection of the emission ratio map, with outlines added between the nuclei NB: the scale of this image is different to the original image and other images, allowing thin outlines to be drawn.
-  •* Log:     ◦ Details of the image file and exact analysis settings used to keep with your metadata. Savable as a .txt file
+  * Log:     ◦ Details of the image file and exact analysis settings used to keep with your metadata. Savable as a .txt file
 
 
 ### **FN2 SEGMENT AND RATIO TUTORIAL** 
