@@ -160,7 +160,7 @@ Existing object classifiers can be applied directly to individual label maps and
   * Select the _date_classifier_fileheaders.json_ file.
   * Click OK, applying a classifier typically takes 15s-1min.
 
-Note: output will be a ROI image an auto generated results table is coming but not yet implemented.
+Note: Output will be a ROI image. An auto generated results table is coming but not yet implemented.
 
 ## **_FRETENATOR_Trackmate_Bridge_ (Alpha)**
 
