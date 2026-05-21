@@ -150,7 +150,7 @@ To train a model, the training data from _Label maps_ and the annotated output o
      1. A _date_classifier.model_ that contains the classifier which must be reloaded to apply the classifier to other images.
      2. A _date_classifier_fileheaders.json_ that contains the chosen parameter headings which must be reloaded to apply the classifier to other images.
 
-**Applying pretrained classifiers**
+**Applying pretrained classifiers (alpha functionality)**
 
 Existing object classifiers can be applied directly to individual label maps and FRETENATOR results tables using the _FN2 Apply Weka to labels_. This version is compatible with timecourse images. To apply a classifier:
 
@@ -160,7 +160,7 @@ Existing object classifiers can be applied directly to individual label maps and
   * Select the _date_classifier_fileheaders.json_ file.
   * Click OK, applying a classifier typically takes 15s-1min.
 
-Note: output will be a ROI image and does not generate a results table... yet.
+Note: output will be a ROI image an auto generated results table is coming but not yet implemented.
 
 ## **_FRETENATOR_Trackmate_Bridge_ (Alpha)**
 
