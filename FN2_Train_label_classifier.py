@@ -36,10 +36,21 @@ def folderSelectDialog():
 	imps = WM.getImageTitles()
 	gd = GenericDialogPlus("Select training file or folder of training files")
 	gd.addDirectoryOrFileField("Choose path", "")
+	gd.addMessage('Choose parameters for random forest classifier')
+	gd.addSlider("Number of trees", 50, 1000, 200, 10)
+	gd.addSlider("Number of features", 1, 20, 5, 1)
+	gd.addSlider("Depth of trees", 1, 20, 2, 1)
 	gd.showDialog()	
 	if gd.wasCanceled():
 		IJ.exit()
-	return gd.getNextString()
+	sliders=gd.getSliders()
+	trees = sliders.get(0).getValue()*10
+	features = sliders.get(1).getValue()
+	treeDepth = sliders.get(2).getValue()
+	
+	
+	print trees, features, treeDepth
+	return gd.getNextString(),trees, features, treeDepth
 	
 def chooseColumns(columns, headingList):
 	gd = GenericDialogPlus("Choose parameters for training")
@@ -131,7 +142,7 @@ if __name__ == "__main__":
 	
 	clij2.clear()
 	
-	filePath=folderSelectDialog()
+	filePath, trees, features, treeDepth =folderSelectDialog()
 	rt=ResultsTable()
 	
 	if os.path.isfile(filePath):
@@ -158,9 +169,9 @@ if __name__ == "__main__":
 
 	
 	classifier = RandomForest() 
-	classifier.setNumIterations(200)
-	classifier.setNumFeatures(5)
-	classifier.setMaxDepth(1)
+	classifier.setNumIterations(trees)
+	classifier.setNumFeatures(features)
+	classifier.setMaxDepth(treeDepth)
 	classifier.buildClassifier(training_data)
 	SerializationHelper.write(filePath + "/" + date + " classifier.model", classifier)  
 	with open(filePath+"/"+date+' classifier_fileheaders.json', 'w') as f:
