@@ -84,9 +84,16 @@ def graphDistCalc(inputVector,touchMatixgtx):
 
 def fileSelectDialog():
 	"""Select label map and model"""
+	nonimages=WM.getNonImageTitles()
 	imps = WM.getImageTitles()
 	gd = GenericDialogPlus("Select label map , classifier and header file")
 	gd.addFileField("Label map file location (optional)", "")
+	if len(nonimages) > 0:
+		gd.addChoice('Results table', nonimages, nonimages[0])
+		fail=0
+	else:
+		gd.addMessage("No results table open")
+		fail=1
 	gd.addFileField("Select classifier.model file", "")
 	gd.addFileField("Select classifier_fileheaders.json file", "")
 	gd.showDialog()
@@ -96,10 +103,14 @@ def fileSelectDialog():
 
 		IJ.exit()
 	labelFilePath =gd.getNextString()
+	rtName= None
+	if len(nonimages) > 0:
+		rtName =gd.getNextChoice()
 	modelFilePath =gd.getNextString()
 	headersFilePath = gd.getNextString()
+	print rtName
 
-	return 	labelFilePath ,	modelFilePath, headersFilePath
+	return 	labelFilePath ,rtName,	modelFilePath, headersFilePath
 
 def createResultsTable(labelImp, labelgtx, size):
 	""" Exctracts all data required for each label in the image and writes to a results table to be used for the ML prediction"""	
@@ -447,7 +458,7 @@ clij2 = CLIJ2.getInstance()
 if __name__ == "__main__":
 	
 	clij2.clear()
-	labelFilePath ,	modelFilePath, headersFilePath=fileSelectDialog()
+	labelFilePath , rtName,	modelFilePath, headersFilePath=fileSelectDialog()
 	with open(headersFilePath, 'r') as config_file:
 		columns = json.load(config_file)	
 
@@ -464,7 +475,12 @@ if __name__ == "__main__":
 	classifier = SerializationHelper.read(modelFilePath)
 	conLabeledStack=ImageStack(width, height)
 	cal= imp1.getCalibration()
-
+	if rtName != None:
+		try:
+			rt0 = ResultsTable.getResultsTable(rtName).clone()
+		except:
+			rt0=ResultsTable()
+	p=0	
 	for i in range(1,frames+1):
 		print i
 		if frames > 1:
@@ -492,14 +508,20 @@ if __name__ == "__main__":
 		
 
 		labels=[0]*(len(input_data)+1)
-		i=1
+		j=1
 		for vector in input_data:
 			vector.setDataset(info)
 			class_index = classifier.classifyInstance(vector)
 			# print "Classified", vector, "as class", class_index	
-			labels[i]=float(class_index)
-			i=i+1
+			labels[j]=float(class_index)
+			j=j+1
 		labelsFloat= array(labels, 'f')
+		for j in range(len(labels)):
+			try:
+					rt0.setValue("Label value", j+p, labels[j])
+			except: 
+				print j, 'eye eye'
+		p=p+len(labels)
 
 
 		fp= FloatProcessor(len(labelsFloat), 1, labelsFloat, None)
@@ -523,8 +545,8 @@ if __name__ == "__main__":
 	concatLabeledImp.show()
 	IJ.run("glasbey_on_dark")
 	IJ.setMinAndMax(newLabelMap,0, 255)
-		
-		
+
+	rt0.show('Results with predicted labels')
 	
 	
 	
