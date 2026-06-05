@@ -209,7 +209,7 @@ class previewLabelerAndListeners(ActionListener, AdjustmentListener):
 			return
 		if Source.label == "Use pretrained classifier":
 		
-			labelFilePath ,	modelFilePath, headersFilePath=clsfr.fileSelectDialog()
+			modelFilePath, headersFilePath=classifierFileSelectDialog()
 			rt=clsfr.createResultsTable(imp2,self.src, self.dimensions)
 			
 			with open(headersFilePath, 'r') as config_file:
@@ -253,7 +253,7 @@ class previewLabelerAndListeners(ActionListener, AdjustmentListener):
 			rtc2 = trningdata.createTrainingResultsTable(imp2, self.labelPreviewImp)
 			rtc2.show('test')
 			
-			filePath=trnclsfr.folderSelectDialog()
+			filePath,trees, features, treeDepth=trnclsfr.folderSelectDialog()
 
 			
 			#rt.show("data")
@@ -271,9 +271,9 @@ class previewLabelerAndListeners(ActionListener, AdjustmentListener):
 			training_data, attributes= trnclsfr.convertTableToInstances(rtc3)
 			
 			classifier = RandomForest() 
-			classifier.setNumIterations(200)
-			classifier.setNumFeatures(5)
-			classifier.setMaxDepth(1)
+			classifier.setNumIterations(trees)
+			classifier.setNumFeatures(features)
+			classifier.setMaxDepth(treeDepth)
 			classifier.buildClassifier(training_data)
 			SerializationHelper.write(filePath + "/" + date + " classifier.model", classifier)  
 			
@@ -398,6 +398,20 @@ class previewLabelerAndListeners(ActionListener, AdjustmentListener):
 
 
 # *******************************functions************************************************
+
+def classifierFileSelectDialog():
+	"""Select label map and model"""
+	gd = GenericDialogPlus("Select classifier and header file")
+	gd.addFileField("Select classifier.model file", "")
+	gd.addFileField("Select classifier_fileheaders.json file", "")
+	gd.showDialog()
+	if gd.wasCanceled():
+		IJ.exit()
+	modelFilePath =gd.getNextString()
+	headersFilePath = gd.getNextString()
+
+	return 	modelFilePath, headersFilePath
+
 def concatStacks(masterStack, impToAdd):
 	#takes an IMP and adds it to a stack, returning the concatenated stack
 	impToAddStack=impToAdd.getImageStack()
